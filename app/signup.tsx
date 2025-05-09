@@ -251,7 +251,7 @@ export default function SignUp() {
         </View>
 
         <View style={[layout.flex_row_center, layout.margin_top_m]}>
-          <Text>Already have an account?</Text>
+          <Text>Already have an account? </Text>
           <Link href="/" style={link.sub_link}>
             Sign in
           </Link>

@@ -3,7 +3,7 @@ import { Tabs } from "expo-router";
 import { View } from "react-native";
 import Feather from "@expo/vector-icons/Feather";
 
-function TabIcon({ name, focused }: { name: string; focused: boolean }) {
+function TabIcon({ name, focused }: { name: "home" | "shopping-cart" | "heart" | "message-circle" | "user"; focused: boolean }) {
   return (
     <View
       style={{
@@ -20,6 +20,7 @@ function TabIcon({ name, focused }: { name: string; focused: boolean }) {
     </View>
   );
 }
+
 export default function TabLayout() {
   return (
     <Tabs

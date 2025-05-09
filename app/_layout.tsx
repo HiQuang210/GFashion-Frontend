@@ -33,7 +33,7 @@ export default function RootLayout() {
             name="resetpassword"
             options={{ title: "resetpassword" }}
           />
-          <Stack.Screen name="changeInfor" options={{ title: "changeInfor" }} />
+          <Stack.Screen name="changeInfo" options={{ title: "changeInfo" }} />
         </Stack>
         <Toast />
       </>

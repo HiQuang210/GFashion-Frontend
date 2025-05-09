@@ -30,7 +30,7 @@ export default function AvatarUploader({
 
   const goToProfile = async () => {
     await AsyncStorage.setItem("userId", userId);
-    router.push("/homepage"); // hoặc trang bạn muốn chuyển
+    router.push("/homepage");
   };
 
   const pickImage = async () => {

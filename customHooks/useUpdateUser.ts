@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { updateUser } from "../services/auth";
+import { updateUser } from "@/api/services/auth";
 
 export const useUpdateUser = () => {
   return useMutation({

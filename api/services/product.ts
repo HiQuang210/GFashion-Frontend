@@ -1,5 +1,4 @@
-import axiosClient from "../lib/axiosClient";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import axiosClient from "@/api/axiosClient";
 
 export const getTop4LatestProducts = async () => {
   const res = await axiosClient.get(

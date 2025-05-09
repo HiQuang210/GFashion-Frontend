@@ -1,11 +1,10 @@
 import { Link } from "expo-router";
 import {
   Text,
-  TextInput,
   View,
   StyleSheet,
-  Image,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import text from "@/styles/text";
 import link from "@/styles/link";
@@ -25,23 +24,23 @@ interface LogInData {
 
 export default function Login() {
   const { login, isPending } = useLogIn();
-  const { register, formState, getValues, handleSubmit, reset, control } =
-    useForm<LogInData>();
-  const { errors } = formState;
+  const { control, handleSubmit, formState: { errors } } = useForm<LogInData>();
 
-  function onSubmit(data: LogInData) {
-    login(data, {
-      onSettled: () => reset(),
-    });
-    console.log(data);
-  }
+  const onSubmit = async (data: LogInData) => {
+    try {
+      await login(data);
+    } catch (error) {
+      // Error is handled in the hook
+      console.log("Login attempt failed");
+    }
+  };
 
   return (
     <View style={styles.container}>
-      <View style={{ marginTop: 150, marginHorizontal: 25 }}>
+      <View style={styles.content}>
         <Title
           mainTitle="Sign In"
-          subTitle="Hi! Welcome back, you've been missed"
+          subTitle="Hi! Welcome back to GFashion!"
           margin_bot={30}
         />
 
@@ -77,13 +76,13 @@ export default function Login() {
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
               label="Password"
-              placeholder="*****************"
+              placeholder="Enter your password"
               keyboardType="default"
               inputMode="text"
               secureTextEntry={true}
-              onBlur={onBlur}
               onChangeText={onChange}
               value={value}
+              onBlur={onBlur}
               error={errors.password?.message}
             />
           )}
@@ -91,43 +90,46 @@ export default function Login() {
 
         <Link
           href="/forgotpass"
-          style={[link.sub_link, { marginTop: 15, textAlign: "right" }]}
+          style={[link.sub_link, styles.forgotLink]}
         >
           Forgot Password?
         </Link>
+
         <TouchableOpacity
           style={[
             link.btn_link,
             link.btn_link_base,
-            { marginTop: 20, marginBottom: 20 },
+            styles.signInButton,
+            isPending && styles.disabledButton
           ]}
           onPress={handleSubmit(onSubmit)}
+          disabled={isPending}
         >
-          <Text style={text.text_btn}>Sign In</Text>
+          <Text style={text.text_btn}>
+            {isPending ? "Signing In..." : "Sign In"}
+          </Text>
         </TouchableOpacity>
 
-        <View style={styles.break_styled}>
-          <View style={styles.break}></View>
+        <View style={styles.divider}>
+          <View style={styles.line}></View>
           <Text style={text.gray_text}>Or sign in with</Text>
-          <View style={styles.break}></View>
+          <View style={styles.line}></View>
         </View>
 
-        <View
-          style={[layout.flex_row_center, layout.gap_s, layout.margin_top_m]}
-        >
-          <View style={[layout.container_rounded, layout.flex_row_center]}>
+        <View style={styles.socialButtons}>
+          <TouchableOpacity style={styles.socialButton}>
             <FontAwesome name="apple" size={28} color="#000" />
-          </View>
-          <View style={[layout.container_rounded, layout.flex_row_center]}>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.socialButton}>
             <FontAwesome name="google" size={28} color="#e94335" />
-          </View>
-          <View style={[layout.container_rounded, layout.flex_row_center]}>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.socialButton}>
             <FontAwesome name="facebook" size={28} color="#3266ce" />
-          </View>
+          </TouchableOpacity>
         </View>
 
-        <View style={[layout.flex_row_center, layout.margin_top_m]}>
-          <Text>Don't have an account?</Text>
+        <View style={styles.signUpSection}>
+          <Text>Don't have an account? </Text>
           <Link href="/signup" style={link.sub_link}>
             Sign up
           </Link>
@@ -142,26 +144,59 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f9f9f9",
   },
-  input: {
-    marginTop: 10,
-    borderWidth: 0.5,
-    paddingHorizontal: 10,
-    paddingVertical: 12,
-    borderRadius: 30,
-    borderColor: "#bcbcbc",
+  content: {
+    marginTop: 150,
+    marginHorizontal: 25,
   },
-
-  break_styled: {
-    display: "flex",
+  forgotLink: {
+    marginTop: 15,
+    textAlign: "right",
+  },
+  signInButton: {
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  disabledButton: {
+    opacity: 0.6,
+  },
+  divider: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 5,
+    gap: 10,
+    marginVertical: 20,
   },
-  break: {
-    width: 80,
-    height: 0,
-    borderColor: "#bcbcbc",
-    borderWidth: 0.5,
+  line: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "#bcbcbc",
+  },
+  socialButtons: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 15,
+    marginTop: 20,
+  },
+  socialButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  signUpSection: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 30,
   },
 });

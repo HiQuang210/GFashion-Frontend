@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { signUp } from "../services/auth";
+import { signUp } from "@/api/services/auth";
 import Toast from "react-native-toast-message";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -22,11 +22,11 @@ export function useSignUp() {
       await AsyncStorage.setItem("userId", user.userInfo.id);
       router.replace("/completeprofile");
     },
-    onError: (error) => {
+    onError: (error: any) => {
       Toast.show({
         type: "error",
         text1: "Dang ki that bai",
-        text2: error.response?.data?.message || error.message,
+        text2: error?.response?.data?.message || error.message,
       });
     },
   });

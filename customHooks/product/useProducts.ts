@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   getTop4LatestProducts,
   getTop4BestSellingProducts,
-} from "../../services/product";
+} from "@/api/services/product";
 
 export const useTop4LatestProducts = () => {
   return useQuery({

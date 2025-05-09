@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { detailUser } from "../services/auth";
+import { detailUser } from "@/api/services/auth";
 
 export function useUser(id) {
   console.log("id: " + id);

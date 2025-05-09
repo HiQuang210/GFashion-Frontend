@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import Toast from "react-native-toast-message";
-import { changePass } from "../services/auth";
+import { changePass } from "@/api/services/auth";
 
 export function useChangePassword() {
   const { mutate: changePw, isPending } = useMutation({
@@ -19,11 +19,11 @@ export function useChangePassword() {
       // Chuyển hướng nếu cần
       // router.replace("/login");
     },
-    onError: (error) => {
+    onError: (error: any) => {
       Toast.show({
         type: "error",
         text1: "Đổi mật khẩu thất bại",
-        text2: error.response?.data?.message || error.message,
+        text2: error?.response?.data?.message || error.message,
       });
     },
   });

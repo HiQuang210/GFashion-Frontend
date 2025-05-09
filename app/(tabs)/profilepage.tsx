@@ -2,7 +2,6 @@ import PageHeader from "@/components/PageHeader";
 import { useUser } from "@/customHooks/useUser";
 import layout from "@/styles/layout";
 import Feather from "@expo/vector-icons/Feather";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
@@ -67,8 +66,8 @@ export default function ProfilePage() {
       uploadMutation.mutate(
         {
           id: userId,
-          data: {}, // không đặt avatar ở đây nữa
-          file: formData, // chúng ta sẽ gửi formData làm 'file'
+          data: {}, 
+          file: formData, 
         } as any,
         {
           onSuccess: async (user) => {
@@ -119,7 +118,7 @@ export default function ProfilePage() {
         <SectionProfile
           icon={"user-o"}
           content={"Your profile"}
-          route={"/changeInfor"}
+          route={"/changeInfo"}
         />
         <SectionProfile icon={"list-alt"} content={"My Order"} route={""} />
         <SectionProfile
