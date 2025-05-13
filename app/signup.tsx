@@ -1,68 +1,75 @@
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import {
   Text,
-  TextInput,
   View,
-  StyleSheet,
   TouchableOpacity,
   ScrollView,
 } from "react-native";
 import text from "@/styles/text";
 import link from "@/styles/link";
 import layout from "@/styles/layout";
+import { signupStyles as styles } from "@/styles/signup";
 
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import Input from "@/components/Input";
 
 import { useForm, Controller } from "react-hook-form";
-import { useSignUp } from "../customHooks/useSignUp";
 import { useState } from "react";
+import { SignUpData } from "@/types/user";
+import { AuthAPI } from "@/api/services/auth";
+import Toast from "react-native-toast-message";
 
-interface SignupData {
-  email: string;
-  password: string;
-  phone: string;
-  firstName: string;
-  lastName: string;
-}
-
-interface FormData {
-  email: string;
-  password: string;
+interface FormData extends SignUpData {
   confirmPassword: string;
-  phone: string;
-  firstName: string;
-  lastName: string;
 }
 
 export default function SignUp() {
-  const { signup, isPending } = useSignUp();
-  const { register, formState, getValues, handleSubmit, reset, control } =
-    useForm<FormData>();
-  const { errors } = formState;
-  const [check, useCheck] = useState(true);
+  const { control, handleSubmit, formState: { errors }, getValues, reset } = useForm<FormData>();
+  const [isLoading, setIsLoading] = useState(false);
+  const [agreeToTerms, setAgreeToTerms] = useState(false);
 
-  function handleCheck() {
-    useCheck(!check);
-  }
+  const onSubmit = async (data: FormData) => {
+    if (!agreeToTerms) {
+      Toast.show({
+        type: "error",
+        text1: "Agreement Required",
+        text2: "Please agree to Terms & Conditions to continue",
+      });
+      return;
+    }
 
-  function onSubmit(data: SignupData) {
-    signup(data, {
-      onSettled: () => reset(),
-    });
-    console.log(data);
-  }
+    setIsLoading(true);
+    try {
+      // Remove confirmPassword before sending to API
+      const { confirmPassword, ...signupData } = data;
+      
+      await AuthAPI.requestEmailVerification(signupData);
+      
+      Toast.show({
+        type: "success",
+        text1: "Registration Initiated",
+        text2: "Please check your email for verification",
+      });
+
+      router.push("/emailverify");
+      reset();
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      Toast.show({
+        type: "error",
+        text1: "Registration Failed",
+        text2: error.response?.data?.message || "Something went wrong",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <ScrollView style={styles.container}>
-      <View style={{ marginTop: 50, marginHorizontal: 25 }}>
+      <View style={styles.contentContainer}>
         <Text style={text.main_title}>Create Account</Text>
-        <Text
-          style={[
-            text.sub_title,
-            { marginBottom: 20, width: 230, marginHorizontal: "auto" },
-          ]}
-        >
+        <Text style={[text.sub_title, styles.title]}>
           Fill your information below or register with your social account
         </Text>
 
@@ -91,50 +98,50 @@ export default function SignUp() {
           )}
         />
 
-        <View style={{ display: "flex", flexDirection: "row", gap: 15 }}>
-          {/* Name */}
-          <Controller
-            control={control}
-            name="firstName"
-            rules={{ required: "First name is required" }}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <Input
-                label="First Name"
-                placeholder="Enter first name"
-                keyboardType="default"
-                inputMode="text"
-                secureTextEntry={false}
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                error={errors.firstName?.message}
-                width={160}
-              />
-            )}
-          />
+        <View style={styles.nameContainer}>
+          <View style={styles.nameInput}>
+            <Controller
+              control={control}
+              name="firstName"
+              rules={{ required: "First name is required" }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input
+                  label="First Name"
+                  placeholder="Enter first name"
+                  keyboardType="default"
+                  inputMode="text"
+                  secureTextEntry={false}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  error={errors.firstName?.message}
+                />
+              )}
+            />
+          </View>
 
-          <Controller
-            control={control}
-            name="lastName"
-            rules={{ required: "Last name is required" }}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <Input
-                label="Last Name"
-                placeholder="Enter last name"
-                keyboardType="default"
-                inputMode="text"
-                secureTextEntry={false}
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                error={errors.lastName?.message}
-                width={160}
-              />
-            )}
-          />
+          <View style={styles.nameInput}>
+            <Controller
+              control={control}
+              name="lastName"
+              rules={{ required: "Last name is required" }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input
+                  label="Last Name"
+                  placeholder="Enter last name"
+                  keyboardType="default"
+                  inputMode="text"
+                  secureTextEntry={false}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  error={errors.lastName?.message}
+                />
+              )}
+            />
+          </View>
         </View>
 
-        {/* Phone */}
         <Controller
           control={control}
           name="phone"
@@ -154,11 +161,16 @@ export default function SignUp() {
           )}
         />
 
-        {/* Password */}
         <Controller
           control={control}
           name="password"
-          rules={{ required: "Password is required" }}
+          rules={{
+            required: "Password is required",
+            minLength: {
+              value: 6,
+              message: "Password must be at least 6 characters",
+            },
+          }}
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
               label="Password"
@@ -174,7 +186,6 @@ export default function SignUp() {
           )}
         />
 
-        {/* Confirm Password */}
         <Controller
           control={control}
           name="confirmPassword"
@@ -201,16 +212,18 @@ export default function SignUp() {
         <View style={[layout.flex_row, layout.gap_xs]}>
           <TouchableOpacity
             style={[
-              styles.checkox,
+              styles.checkbox,
               layout.flex_row_center,
               {
-                backgroundColor: check ? "#704F38" : "#fff",
+                backgroundColor: agreeToTerms ? "#704F38" : "#fff",
                 borderColor: "#704F38",
               },
             ]}
-            onPress={handleCheck}
+            onPress={() => setAgreeToTerms(!agreeToTerms)}
           >
-            {check ? <FontAwesome name="check" size={22} color="#fff" /> : null}
+            {agreeToTerms ? (
+              <FontAwesome name="check" size={22} color="#fff" />
+            ) : null}
           </TouchableOpacity>
           <Text>Agree with</Text>
           <Link href="/" style={[link.sub_link]}>
@@ -222,37 +235,38 @@ export default function SignUp() {
           style={[
             link.btn_link,
             link.btn_link_base,
-            { marginTop: 20, marginBottom: 20 },
+            styles.signUpButton,
+            (!agreeToTerms || isLoading) && { opacity: 0.6 },
           ]}
           onPress={handleSubmit(onSubmit)}
-          disabled={!check}
+          disabled={!agreeToTerms || isLoading}
         >
-          <Text style={text.text_btn}>Sign Up</Text>
+          <Text style={text.text_btn}>
+            {isLoading ? "Creating Account..." : "Sign Up"}
+          </Text>
         </TouchableOpacity>
 
-        <View style={styles.break_styled}>
+        <View style={styles.breakStyled}>
           <View style={styles.break}></View>
           <Text style={text.gray_text}>Or sign up with</Text>
           <View style={styles.break}></View>
         </View>
 
-        <View
-          style={[layout.flex_row_center, layout.gap_s, layout.margin_top_m]}
-        >
-          <View style={[layout.container_rounded, layout.flex_row_center]}>
+        <View style={[layout.flex_row_center, layout.gap_s, layout.margin_top_m]}>
+          <TouchableOpacity style={[layout.container_rounded, layout.flex_row_center]}>
             <FontAwesome name="apple" size={28} color="#000" />
-          </View>
-          <View style={[layout.container_rounded, layout.flex_row_center]}>
+          </TouchableOpacity>
+          <TouchableOpacity style={[layout.container_rounded, layout.flex_row_center]}>
             <FontAwesome name="google" size={28} color="#e94335" />
-          </View>
-          <View style={[layout.container_rounded, layout.flex_row_center]}>
+          </TouchableOpacity>
+          <TouchableOpacity style={[layout.container_rounded, layout.flex_row_center]}>
             <FontAwesome name="facebook" size={28} color="#3266ce" />
-          </View>
+          </TouchableOpacity>
         </View>
 
         <View style={[layout.flex_row_center, layout.margin_top_m]}>
           <Text>Already have an account? </Text>
-          <Link href="/" style={link.sub_link}>
+          <Link href="/login" style={link.sub_link}>
             Sign in
           </Link>
         </View>
@@ -260,40 +274,3 @@ export default function SignUp() {
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f9f9f9",
-  },
-  input: {
-    marginTop: 10,
-    borderWidth: 0.5,
-    paddingHorizontal: 10,
-    paddingVertical: 12,
-    borderRadius: 30,
-    borderColor: "#bcbcbc",
-  },
-
-  break_styled: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 5,
-  },
-  break: {
-    width: 80,
-    height: 0,
-    borderColor: "#bcbcbc",
-    borderWidth: 0.5,
-  },
-
-  checkox: {
-    width: 30,
-    height: 30,
-
-    borderRadius: 10,
-    borderWidth: 1,
-  },
-});

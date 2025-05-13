@@ -37,7 +37,7 @@ export default function VerifyPage() {
           </Link>
         </View>
 
-        <AccessButton route="completeprofile" content="Verify" />
+        <AccessButton route="completeprofile" content="Verify" color={""} background={""} />
       </View>
     </SafeAreaView>
   );

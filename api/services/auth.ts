@@ -11,6 +11,17 @@ import {
 } from "@/types/user";
 
 export class AuthAPI {
+  static async requestEmailVerification(formData: SignUpData): Promise<ApiResponse> {
+    try {
+      const response = await axiosClient.post("user/request-email-verification", formData);
+      console.log("Email verification request successful:", response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("Email verification request error:", error.response?.data || error.message);
+      throw error;
+    }
+  }
+
   static async signUp(formData: SignUpData): Promise<SignUpResponse> {
     try {
       const response = await axiosClient.post("user/sign-up", formData);
@@ -29,17 +40,6 @@ export class AuthAPI {
       return response.data;
     } catch (error: any) {
       console.error("Login error:", error.response?.data || error.message);
-      throw error;
-    }
-  }
-
-  static async adminSignIn(formData: LoginData): Promise<LoginResponse> {
-    try {
-      const response = await axiosClient.post("user/admin-sign-in", formData);
-      console.log("Admin login successful:", response.data);
-      return response.data;
-    } catch (error: any) {
-      console.error("Admin login error:", error.response?.data || error.message);
       throw error;
     }
   }
@@ -93,9 +93,9 @@ export class AuthAPI {
   }
 }
 
+export const requestEmailVerification = AuthAPI.requestEmailVerification;
 export const signUp = AuthAPI.signUp;
 export const logIn = AuthAPI.signIn;
-export const adminLogIn = AuthAPI.adminSignIn;
 export const requestPasswordReset = AuthAPI.requestPasswordReset;
 export const verifyResetCode = AuthAPI.verifyResetCode;
 export const resetPassword = AuthAPI.resetPassword;

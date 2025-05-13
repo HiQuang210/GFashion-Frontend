@@ -16,6 +16,7 @@ export default function RootLayout() {
           <Stack.Screen name="onboarding" options={{ title: "onboarding" }} />
           <Stack.Screen name="login" options={{ title: "login" }} />
           <Stack.Screen name="signup" options={{ title: "signup" }} />
+          <Stack.Screen name="emailverify" options={{ title: "emailverify" }} />
           <Stack.Screen name="verifypage" options={{ title: "verify" }} />
           <Stack.Screen name="forgotpass" options={{ title: "forgotpass" }} />
           <Stack.Screen

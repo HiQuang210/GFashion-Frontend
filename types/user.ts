@@ -1,3 +1,4 @@
+// Core User Interface
 export interface UserInfo {
   _id: string;
   email: string;
@@ -14,13 +15,13 @@ export interface UserInfo {
   updatedAt?: string;
 }
 
+// Auth Data Interfaces
 export interface SignUpData {
   email: string;
   password: string;
   firstName: string;
   lastName: string;
-  phone?: string;
-  confirmPassword?: string;
+  phone: string;
 }
 
 export interface LoginData {
@@ -90,7 +91,7 @@ export interface RefreshTokenResponse extends ApiResponse {
   refresh_token?: string;
 }
 
-// Cart related types (if needed)
+// Cart related types
 export interface CartItem {
   productId: string;
   quantity: number;
@@ -130,6 +131,7 @@ export interface FormErrors {
   newPassword?: string;
 }
 
+// Auth Context Types
 export interface AuthState {
   user: UserInfo | null;
   isAuthenticated: boolean;

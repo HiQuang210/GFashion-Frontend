@@ -18,14 +18,12 @@ export function useLogIn() {
         ["userInfo", JSON.stringify(response.userInfo)]
       ]);
 
-      // Show success message
       Toast.show({
         type: "success",
         text1: "Welcome back!",
         text2: `Hi ${response.userInfo.firstName}`,
       });
 
-      // Navigate to homepage
       router.replace("/homepage");
     },
     onError: (error: any) => {

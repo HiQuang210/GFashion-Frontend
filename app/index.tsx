@@ -63,7 +63,7 @@ export default function Index() {
             style={{
               width: "100%",
               height: 150,
-              borderRadius: "100%",
+              borderRadius: 50,
             }}
           />
         </View>
