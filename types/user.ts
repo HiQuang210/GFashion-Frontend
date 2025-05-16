@@ -1,4 +1,3 @@
-// Core User Interface
 export interface UserInfo {
   _id: string;
   email: string;
@@ -15,7 +14,6 @@ export interface UserInfo {
   updatedAt?: string;
 }
 
-// Auth Data Interfaces
 export interface SignUpData {
   email: string;
   password: string;
@@ -42,22 +40,21 @@ export interface ChangePasswordData {
   newPassword: string;
 }
 
-export interface ResetPasswordData {
-  email: string;
-  resetCode: string;
-  newPassword: string;
-}
-
 export interface RequestPasswordResetData {
   email: string;
 }
 
 export interface VerifyResetCodeData {
   email: string;
-  resetCode: string;
+  code: string;
 }
 
-// API Response Types
+export interface ResetPasswordData {
+  email: string;
+  code: string; 
+  newPassword: string;
+}
+
 export interface ApiResponse<T = any> {
   status: string;
   message: string;
@@ -119,7 +116,6 @@ export interface ExtendedUserInfo extends UserInfo {
   favoriteProducts?: FavoriteProduct[];
 }
 
-// Form validation types
 export interface FormErrors {
   email?: string;
   password?: string;
@@ -131,7 +127,6 @@ export interface FormErrors {
   newPassword?: string;
 }
 
-// Auth Context Types
 export interface AuthState {
   user: UserInfo | null;
   isAuthenticated: boolean;

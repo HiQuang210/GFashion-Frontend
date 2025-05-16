@@ -1,12 +1,12 @@
 import Input from "@/components/Input";
 import PageHeader from "@/components/PageHeader";
-import { useUser } from "@/customHooks/useUser";
+import { useUser } from "@/hooks/useUser";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useState, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useUpdateUser } from "@/customHooks/useUpdateUser";
+import { useUpdateUser } from "@/hooks/useUpdateUser";
 import link from "@/styles/link";
 import text from "@/styles/text";
 import { useQueryClient } from "@tanstack/react-query";

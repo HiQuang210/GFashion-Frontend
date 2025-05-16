@@ -15,7 +15,7 @@ import {
   TouchableOpacity,
   Dimensions,
 } from "react-native";
-import { useProductDetail } from "../../customHooks/product/useProduct";
+import { useProductDetail } from "../../hooks/product/useProduct";
 import { useState } from "react";
 import Carousel from "react-native-reanimated-carousel";
 export default function BestSeller() {

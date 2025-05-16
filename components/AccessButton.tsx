@@ -1,34 +1,50 @@
-import { Link } from "expo-router";
-
+import { Text, TouchableOpacity } from "react-native";
 import link from "@/styles/link";
 
-type BtnProps = {
-  route: string;
+interface BtnProps {
+  route?: string;
   content: string;
-  color: string;
-  background: string;
-};
+  color?: string;
+  background?: string;
+  onPress?: () => void;
+  disabled?: boolean;
+  style?: any;
+}
 
 export default function AccessButton({
-  route,
   content,
-  background,
-  color,
+  background = "#704F38",
+  color = "#fff",
+  onPress,
+  disabled,
+  style,
 }: BtnProps) {
   return (
-    <Link
-      href={{ pathname: `/${route}` as any }}
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={disabled}
       style={[
         link.btn_link,
         link.btn_link_base,
         {
-          marginBottom: 20,
           backgroundColor: background,
-          color: color,
+          opacity: disabled ? 0.6 : 1,
+          alignItems: "center",      
+          justifyContent: "center",   
         },
+        style,
       ]}
     >
-      {content}
-    </Link>
+      <Text
+        style={{
+          color,
+          fontSize: 16,
+          fontWeight: "600",
+          textAlign: "center",
+        }}
+      >
+        {content}
+      </Text>
+    </TouchableOpacity>
   );
 }

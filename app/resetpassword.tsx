@@ -6,7 +6,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Controller, useForm } from "react-hook-form";
 import { Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useChangePassword } from "../customHooks/useChangePass";
+import { useChangePassword } from "../hooks/useChangePass";
 import { useState, useEffect } from "react";
 
 interface resetdata {

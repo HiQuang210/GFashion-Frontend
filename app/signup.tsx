@@ -1,4 +1,5 @@
-import { Link, router } from "expo-router";
+// components/SignUp.tsx
+import { Link } from "expo-router";
 import {
   Text,
   View,
@@ -9,59 +10,48 @@ import text from "@/styles/text";
 import link from "@/styles/link";
 import layout from "@/styles/layout";
 import { signupStyles as styles } from "@/styles/signup";
-
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import Input from "@/components/Input";
-
 import { useForm, Controller } from "react-hook-form";
-import { useState } from "react";
 import { SignUpData } from "@/types/user";
-import { AuthAPI } from "@/api/services/auth";
-import Toast from "react-native-toast-message";
+import { useRegister } from "@/hooks/useRegister";
+import { useAgreement } from "@/hooks/useAgreement";
 
 interface FormData extends SignUpData {
   confirmPassword: string;
 }
 
 export default function SignUp() {
-  const { control, handleSubmit, formState: { errors }, getValues, reset } = useForm<FormData>();
-  const [isLoading, setIsLoading] = useState(false);
-  const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const { control, handleSubmit, formState: { errors }, getValues, reset } = useForm<FormData>({
+    defaultValues: {
+      email: "",
+      firstName: "",
+      lastName: "",
+      phone: "",
+      password: "",
+      confirmPassword: ""
+    }
+  });
+  
+  const { register, isPending, isError, reset: resetMutation } = useRegister();
+  const { agreeToTerms, toggleAgreement, validateAgreement } = useAgreement();
 
   const onSubmit = async (data: FormData) => {
-    if (!agreeToTerms) {
-      Toast.show({
-        type: "error",
-        text1: "Agreement Required",
-        text2: "Please agree to Terms & Conditions to continue",
-      });
+    if (!validateAgreement()) {
       return;
     }
 
-    setIsLoading(true);
     try {
-      // Remove confirmPassword before sending to API
-      const { confirmPassword, ...signupData } = data;
-      
-      await AuthAPI.requestEmailVerification(signupData);
-      
-      Toast.show({
-        type: "success",
-        text1: "Registration Initiated",
-        text2: "Please check your email for verification",
-      });
+      if (isError) {
+        resetMutation();
+      }
 
-      router.push("/emailverify");
+      const { confirmPassword, ...signupData } = data;
+      await register(signupData);
+
       reset();
-    } catch (error: any) {
-      console.error("Registration error:", error);
-      Toast.show({
-        type: "error",
-        text1: "Registration Failed",
-        text2: error.response?.data?.message || "Something went wrong",
-      });
-    } finally {
-      setIsLoading(false);
+    } catch (error) {
+      console.log("Registration attempt failed:", error);
     }
   };
 
@@ -103,7 +93,13 @@ export default function SignUp() {
             <Controller
               control={control}
               name="firstName"
-              rules={{ required: "First name is required" }}
+              rules={{ 
+                required: "First name is required",
+                minLength: {
+                  value: 2,
+                  message: "First name must be at least 2 characters"
+                }
+              }}
               render={({ field: { onChange, onBlur, value } }) => (
                 <Input
                   label="First Name"
@@ -124,7 +120,13 @@ export default function SignUp() {
             <Controller
               control={control}
               name="lastName"
-              rules={{ required: "Last name is required" }}
+              rules={{ 
+                required: "Last name is required",
+                minLength: {
+                  value: 2,
+                  message: "Last name must be at least 2 characters"
+                }
+              }}
               render={({ field: { onChange, onBlur, value } }) => (
                 <Input
                   label="Last Name"
@@ -145,7 +147,13 @@ export default function SignUp() {
         <Controller
           control={control}
           name="phone"
-          rules={{ required: "Phone is required" }}
+          rules={{ 
+            required: "Phone is required",
+            pattern: {
+              value: /^[0-9+\-\s()]{10,}$/,
+              message: "Please provide a valid phone number"
+            }
+          }}
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
               label="Phone Number"
@@ -170,6 +178,10 @@ export default function SignUp() {
               value: 6,
               message: "Password must be at least 6 characters",
             },
+            pattern: {
+              value: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{6,}$/,
+              message: "Password must contain at least one letter and one number"
+            }
           }}
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
@@ -219,7 +231,7 @@ export default function SignUp() {
                 borderColor: "#704F38",
               },
             ]}
-            onPress={() => setAgreeToTerms(!agreeToTerms)}
+            onPress={toggleAgreement}
           >
             {agreeToTerms ? (
               <FontAwesome name="check" size={22} color="#fff" />
@@ -236,13 +248,13 @@ export default function SignUp() {
             link.btn_link,
             link.btn_link_base,
             styles.signUpButton,
-            (!agreeToTerms || isLoading) && { opacity: 0.6 },
+            (!agreeToTerms || isPending) && { opacity: 0.6 },
           ]}
           onPress={handleSubmit(onSubmit)}
-          disabled={!agreeToTerms || isLoading}
+          disabled={!agreeToTerms || isPending}
         >
           <Text style={text.text_btn}>
-            {isLoading ? "Creating Account..." : "Sign Up"}
+            {isPending ? "Creating Account..." : "Sign Up"}
           </Text>
         </TouchableOpacity>
 

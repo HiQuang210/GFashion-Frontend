@@ -2,7 +2,7 @@ import { ScrollView, View, Text } from "react-native";
 import SectionHeader from "./SectionHeader";
 import ProductItem from "./ProductItem";
 import layout from "@/styles/layout";
-import { useTop4LatestProducts } from "../customHooks/product/useProducts";
+import { useTop4LatestProducts } from "../hooks/product/useProducts";
 
 export default function NewSection() {
   const { data, isLoading, isError } = useTop4LatestProducts();

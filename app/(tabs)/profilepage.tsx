@@ -1,5 +1,5 @@
 import PageHeader from "@/components/PageHeader";
-import { useUser } from "@/customHooks/useUser";
+import { useUser } from "@/hooks/useUser";
 import layout from "@/styles/layout";
 import Feather from "@expo/vector-icons/Feather";
 
@@ -16,7 +16,7 @@ import {
   Text,
   Alert,
 } from "react-native";
-import { useUpdateUser } from "@/customHooks/useUpdateUser";
+import { useUpdateUser } from "@/hooks/useUpdateUser";
 import SectionProfile from "@/components/SectionProfile";
 import LogoutSec from "@/components/LogoutSec";
 

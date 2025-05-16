@@ -11,22 +11,29 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import Title from "@/components/Title";
 import Input from "@/components/Input";
 import { Controller, useForm } from "react-hook-form";
-import { useLogIn } from "../customHooks/useLogin";
-
-interface LogInData {
-  email: string;
-  password: string;
-}
+import { useLogIn } from "@/hooks/useLogin";
+import { LoginData } from "@/types/user";
 
 export default function Login() {
-  const { login, isPending } = useLogIn();
-  const { control, handleSubmit, formState: { errors } } = useForm<LogInData>();
+  const { login, isPending, isError, reset } = useLogIn();
+  const { control, handleSubmit, formState: { errors } } = useForm<LoginData>({
+    defaultValues: {
+      email: "",
+      password: ""
+    }
+  });
 
-  const onSubmit = async (data: LogInData) => {
+  const onSubmit = async (data: LoginData) => {
     try {
+      // Reset any previous errors
+      if (isError) {
+        reset();
+      }
+      
       await login(data);
     } catch (error) {
-      console.log("Login attempt failed");
+      console.log("Login attempt failed:", error);
+      // Error handling is done in the hook via toast
     }
   };
 
@@ -67,7 +74,13 @@ export default function Login() {
         <Controller
           control={control}
           name="password"
-          rules={{ required: "Password is required" }}
+          rules={{ 
+            required: "Password is required",
+            minLength: {
+              value: 6,
+              message: "Password must be at least 6 characters"
+            }
+          }}
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
               label="Password"

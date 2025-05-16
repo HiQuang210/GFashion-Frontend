@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import Feather from "@expo/vector-icons/Feather";
 import layout from "@/styles/layout";
-import { useUpdateUser } from "../customHooks/useUpdateUser";
+import { useUpdateUser } from "../hooks/useUpdateUser";
 import { router } from "expo-router";
 import link from "@/styles/link";
 import text from "@/styles/text";
