@@ -1,7 +1,6 @@
 import { View, StyleSheet, SafeAreaView } from "react-native";
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import Toast from "react-native-toast-message";
 import { router } from "expo-router";
 
 import Input from "@/components/Input";
@@ -10,10 +9,12 @@ import AccessButton from "@/components/AccessButton";
 import BackButton from "@/components/BackButton";
 import { AuthAPI } from "@/api/services/auth";
 import { RequestPasswordResetData } from "@/types/user";
+import { useToast } from "@/hooks/useToast"; 
 
 export default function ForgotPass() {
   const { control, handleSubmit, formState: { errors } } = useForm<RequestPasswordResetData>();
   const [isLoading, setIsLoading] = useState(false);
+  const { showSuccessToast, showErrorToast } = useToast(); 
 
   const onSubmit = async (data: RequestPasswordResetData) => {
     setIsLoading(true);
@@ -21,30 +22,27 @@ export default function ForgotPass() {
       const response = await AuthAPI.requestPasswordReset(data);
       
       if (response.status === "OK") {
-        Toast.show({
-          type: "success",
-          text1: "Reset Code Sent",
-          text2: "Please check your email for the verification code",
-        });
+        showSuccessToast(
+          "Reset Code Sent",
+          "Please check your email for the verification code"
+        );
 
         router.push({
-          pathname: "/verifypage",
+          pathname: "/resetpass",
           params: { email: data.email }
         });
       } else {
-        Toast.show({
-          type: "error",
-          text1: "Reset Failed",
-          text2: response.message || "Something went wrong",
-        });
+        showErrorToast(
+          "Reset Failed",
+          response.message || "Something went wrong"
+        );
       }
     } catch (error: any) {
       console.error("Password reset request error:", error);
-      Toast.show({
-        type: "error",
-        text1: "Reset Failed",
-        text2: error.response?.data?.message || "Something went wrong",
-      });
+      showErrorToast(
+        "Reset Failed",
+        error.response?.data?.message || "Something went wrong"
+      );
     } finally {
       setIsLoading(false);
     }

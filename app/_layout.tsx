@@ -24,7 +24,7 @@ export default function RootLayout() {
           
           {/* Password Reset Flow */}
           <Stack.Screen name="forgotpass" options={{ title: "forgotpass" }} />
-          <Stack.Screen name="verifypage" options={{ title: "verifypage" }} />
+          <Stack.Screen name="resetpass" options={{ title: "resetpass" }} />
           <Stack.Screen name="resetpassword" options={{ title: "resetpassword" }} />
           
           {/* Profile Setup */}

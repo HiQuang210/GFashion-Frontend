@@ -1,7 +1,6 @@
 import { View, SafeAreaView, Text } from "react-native";
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import Toast from "react-native-toast-message";
 import { router, useLocalSearchParams } from "expo-router";
 
 import Input from "@/components/Input";
@@ -9,8 +8,8 @@ import Title from "@/components/Title";
 import AccessButton from "@/components/AccessButton";
 import BackButton from "@/components/BackButton";
 import { AuthAPI } from "@/api/services/auth";
-import { styles } from "@/styles/verifypage";
-
+import { styles } from "@/styles/resetpass";
+import { useToast } from "@/hooks/useToast"; 
 interface FormData {
   resetCode: string;
   newPassword: string;
@@ -20,7 +19,7 @@ interface FormData {
 export default function VerifyResetCode() {
   const { email } = useLocalSearchParams<{ email: string }>();
   const [isLoading, setIsLoading] = useState(false);
-  
+  const { showSuccessToast, showErrorToast } = useToast(); 
   const { 
     control, 
     handleSubmit, 
@@ -52,11 +51,10 @@ export default function VerifyResetCode() {
 
   const validateRequiredData = (email: string, code: string): boolean => {
     if (!email || !code) {
-      Toast.show({
-        type: "error",
-        text1: "Missing Information",
-        text2: "Email and verification code are required",
-      });
+      showErrorToast(
+        "Missing Information",
+        "Email and verification code are required"
+      );
       return false;
     }
     return true;
@@ -68,11 +66,10 @@ export default function VerifyResetCode() {
     const verifyResponse = await AuthAPI.verifyResetCode(verifyData);
 
     if (verifyResponse.status !== "OK") {
-      Toast.show({
-        type: "error",
-        text1: "Invalid Code",
-        text2: verifyResponse.message || "The verification code is invalid or expired",
-      });
+      showErrorToast(
+        "Invalid Code",
+        verifyResponse.message || "The verification code is invalid or expired"
+      );
       return false;
     }
     
@@ -85,20 +82,18 @@ export default function VerifyResetCode() {
     const resetResponse = await AuthAPI.resetPassword(resetData);
     
     if (resetResponse.status === "OK") {
-      Toast.show({
-        type: "success",
-        text1: "Password Reset Successfully",
-        text2: "Please login with your new password",
-      });
+      showSuccessToast(
+        "Password Reset Successfully",
+        "Please login with your new password"
+      );
       
       router.replace("/login");
       return true;
     } else {
-      Toast.show({
-        type: "error",
-        text1: "Reset Failed",
-        text2: resetResponse.message || "Something went wrong",
-      });
+      showErrorToast(
+        "Reset Failed",
+        resetResponse.message || "Something went wrong"
+      );
       return false;
     }
   };
@@ -134,11 +129,10 @@ export default function VerifyResetCode() {
         console.error("API Error Response:", error.response.data);
       }
       
-      Toast.show({
-        type: "error",
-        text1: "Reset Failed",
-        text2: error.response?.data?.message || error.message || "Something went wrong",
-      });
+      showErrorToast(
+        "Reset Failed",
+        error.response?.data?.message || error.message || "Something went wrong"
+      );
     } finally {
       setIsLoading(false);
     }
