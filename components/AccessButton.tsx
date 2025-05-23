@@ -39,7 +39,6 @@ export default function AccessButton({
         style={{
           color,
           fontSize: 16,
-          fontWeight: "600",
           textAlign: "center",
         }}
       >

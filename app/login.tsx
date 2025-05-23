@@ -13,6 +13,7 @@ import Input from "@/components/Input";
 import { Controller, useForm } from "react-hook-form";
 import { useLogIn } from "@/hooks/useLogin";
 import { LoginData } from "@/types/user";
+import CustomButton from "@/components/CustomButton";
 
 export default function Login() {
   const { login, isPending, isError, reset } = useLogIn();
@@ -25,7 +26,6 @@ export default function Login() {
 
   const onSubmit = async (data: LoginData) => {
     try {
-      // Reset any previous errors
       if (isError) {
         reset();
       }
@@ -33,7 +33,6 @@ export default function Login() {
       await login(data);
     } catch (error) {
       console.log("Login attempt failed:", error);
-      // Error handling is done in the hook via toast
     }
   };
 
@@ -103,20 +102,12 @@ export default function Login() {
           Forgot Password?
         </Link>
 
-        <TouchableOpacity
-          style={[
-            link.btn_link,
-            link.btn_link_base,
-            styles.signInButton,
-            isPending && styles.disabledButton
-          ]}
+        <CustomButton
+          content="Sign In"
           onPress={handleSubmit(onSubmit)}
-          disabled={isPending}
-        >
-          <Text style={text.text_btn}>
-            {isPending ? "Signing In..." : "Sign In"}
-          </Text>
-        </TouchableOpacity>
+          isPending={isPending}
+          style={{ marginTop: 20 }}  
+        />
 
         <View style={styles.divider}>
           <View style={styles.line}></View>
