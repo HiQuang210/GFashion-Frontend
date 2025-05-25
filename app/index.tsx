@@ -1,13 +1,16 @@
 import { View, StyleSheet, Text, Image } from "react-native";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 
 import Svg, { Circle } from "react-native-svg";
 import text from "@/styles/text";
 import link from "@/styles/link";
-
-import Toast from "react-native-toast-message";
+import CustomButton from "@/components/CustomButton";
 
 export default function Index() {
+  const handleGetStarted = () => {
+    router.push("/onboarding");
+  };
+  
   return (
     <View style={styles.container}>
       <Svg height="50%" width="50%" viewBox="0 0 100 100" style={styles.circle}>
@@ -78,9 +81,11 @@ export default function Index() {
         Fashion advice that fits your taste and lifestyle perfectly
       </Text>
 
-      <Link href="/onboarding" style={[link.btn_link, link.btn_link_welcome]}>
-        Let's Get Started
-      </Link>
+      <CustomButton 
+        content="Let's Get Started" 
+        onPress={handleGetStarted} 
+        style={[link.btn_link, link.btn_link_welcome]} 
+      />
 
       <View
         style={{

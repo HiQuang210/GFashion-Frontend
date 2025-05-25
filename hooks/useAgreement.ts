@@ -5,10 +5,6 @@ export function useAgreement() {
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const { showErrorToast } = useToast();
 
-  const toggleAgreement = () => {
-    setAgreeToTerms(!agreeToTerms);
-  };
-
   const validateAgreement = () => {
     if (!agreeToTerms) {
       showErrorToast(
@@ -22,7 +18,7 @@ export function useAgreement() {
 
   return {
     agreeToTerms,
-    toggleAgreement,
-    validateAgreement
+    validateAgreement,
+    setAgreeToTerms, 
   };
 }

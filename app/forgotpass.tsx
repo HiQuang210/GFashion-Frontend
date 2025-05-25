@@ -28,7 +28,7 @@ export default function ForgotPass() {
         );
 
         router.push({
-          pathname: "/resetpass",
+          pathname: "/resetpassword",
           params: { email: data.email }
         });
       } else {

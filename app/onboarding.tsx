@@ -1,4 +1,4 @@
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import {
   StyleSheet,
   Image,
@@ -11,6 +11,8 @@ import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import text from "@/styles/text";
 import { useState } from "react";
 import link from "@/styles/link";
+import CustomButton from "@/components/CustomButton"; 
+
 export default function Onboarding() {
   const [imgIndex, setImgIndex] = useState<number>(0);
   const images = [
@@ -48,6 +50,10 @@ export default function Onboarding() {
       return;
     }
     setImgIndex(imgIndex - 1);
+  }
+
+  function handleSignUp() {
+    router.push('/signup');
   }
 
   return (
@@ -107,9 +113,12 @@ export default function Onboarding() {
           </View>
 
           {imgIndex === 2 ? (
-            <Link href="/signup" style={[link.btn_link, link.btn_link_nav]}>
-              Sign Up
-            </Link>
+            // Thay Link bằng CustomButton cho nút Sign Up
+            <CustomButton 
+              content="Sign Up" 
+              onPress={handleSignUp} 
+              style={[link.btn_link, link.btn_link_nav]} 
+            />
           ) : (
             <TouchableOpacity onPress={handleNextImg}>
               <View style={[styles.round_bac, { backgroundColor: "#704F38" }]}>

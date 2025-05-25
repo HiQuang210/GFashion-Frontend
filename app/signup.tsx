@@ -1,5 +1,3 @@
-// components/SignUp.tsx
-import { Link } from "expo-router";
 import {
   Text,
   View,
@@ -16,6 +14,10 @@ import { useForm, Controller } from "react-hook-form";
 import { SignUpData } from "@/types/user";
 import { useRegister } from "@/hooks/useRegister";
 import { useAgreement } from "@/hooks/useAgreement";
+import { useNavigation } from "@/hooks/useNavigation"; // Custom hook
+import CustomButton from "@/components/CustomButton";
+import TermsAgreement from "@/components/TermsAgreement";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface FormData extends SignUpData {
   confirmPassword: string;
@@ -33,8 +35,16 @@ export default function SignUp() {
     }
   });
   
+  const insets = useSafeAreaInsets();
   const { register, isPending, isError, reset: resetMutation } = useRegister();
-  const { agreeToTerms, toggleAgreement, validateAgreement } = useAgreement();
+  const { agreeToTerms, validateAgreement, setAgreeToTerms } = useAgreement();
+  
+  // Use custom navigation hook
+  const { goToLogin } = useNavigation({
+    throttleTime: 1000,
+    debounceDelay: 150,
+    logErrors: true
+  });
 
   const onSubmit = async (data: FormData) => {
     if (!validateAgreement()) {
@@ -56,7 +66,11 @@ export default function SignUp() {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView 
+      style={styles.container}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
       <View style={styles.contentContainer}>
         <Text style={text.main_title}>Create Account</Text>
         <Text style={[text.sub_title, styles.title]}>
@@ -222,41 +236,17 @@ export default function SignUp() {
         />
 
         <View style={[layout.flex_row, layout.gap_xs]}>
-          <TouchableOpacity
-            style={[
-              styles.checkbox,
-              layout.flex_row_center,
-              {
-                backgroundColor: agreeToTerms ? "#704F38" : "#fff",
-                borderColor: "#704F38",
-              },
-            ]}
-            onPress={toggleAgreement}
-          >
-            {agreeToTerms ? (
-              <FontAwesome name="check" size={22} color="#fff" />
-            ) : null}
-          </TouchableOpacity>
-          <Text>Agree with</Text>
-          <Link href="/" style={[link.sub_link]}>
-            Terms & Conditions
-          </Link>
+          <TermsAgreement value={agreeToTerms} onChange={setAgreeToTerms} />
         </View>
 
-        <TouchableOpacity
-          style={[
-            link.btn_link,
-            link.btn_link_base,
-            styles.signUpButton,
-            (!agreeToTerms || isPending) && { opacity: 0.6 },
-          ]}
-          onPress={handleSubmit(onSubmit)}
-          disabled={!agreeToTerms || isPending}
-        >
-          <Text style={text.text_btn}>
-            {isPending ? "Creating Account..." : "Sign Up"}
-          </Text>
-        </TouchableOpacity>
+        <View style={{ marginVertical: 20 }}>
+          <CustomButton
+            content={isPending ? "Creating Account..." : "Sign Up"}
+            onPress={handleSubmit(onSubmit)}
+            isPending={isPending}
+            disabled={!agreeToTerms || isPending}
+          />
+        </View>
 
         <View style={styles.breakStyled}>
           <View style={styles.break}></View>
@@ -276,11 +266,17 @@ export default function SignUp() {
           </TouchableOpacity>
         </View>
 
-        <View style={[layout.flex_row_center, layout.margin_top_m]}>
+        <View
+          style={[
+            layout.flex_row_center,
+            layout.margin_top_m,
+            { paddingBottom: insets.bottom + 20 }
+          ]}
+        >
           <Text>Already have an account? </Text>
-          <Link href="/login" style={link.sub_link}>
-            Sign in
-          </Link>
+          <TouchableOpacity onPress={goToLogin}>
+            <Text style={link.sub_link}>Sign in</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </ScrollView>
