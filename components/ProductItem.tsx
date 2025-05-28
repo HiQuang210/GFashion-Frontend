@@ -4,19 +4,29 @@ import { Link, router } from "expo-router";
 import layout from "@/styles/layout";
 import text from "@/styles/text";
 import LikeButton from "./LikeButton";
+import { Product } from "@/types/product";
 
-export default function ProductItem({ data }: any) {
+interface ProductItemProps {
+  data: Product;
+}
+
+export default function ProductItem({ data }: ProductItemProps) {
+  // Add safety checks for data
+  if (!data) {
+    return <View><Text>No product data</Text></View>;
+  }
+
   return (
     <TouchableOpacity
       onPress={() =>
-        router.push({ pathname: "/product/[id]", params: { id: data[0]._id } })
+        router.push({ pathname: "/product/[id]", params: { id: data._id } })
       }
       style={{ position: "relative" }}
     >
       <LikeButton />
       <View style={layout.margin_bottom_xs}>
         <Image
-          source={{ uri: data[0]?.images[0] }}
+          source={{ uri: data.images?.[0] || '' }}
           resizeMode="stretch"
           style={styles.img}
         />
@@ -28,17 +38,17 @@ export default function ProductItem({ data }: any) {
             ellipsizeMode="tail"
             style={[styles.name_product, { width: 120 }]}
           >
-            {data[0]?.name}
+            {data.name || 'Unknown Product'}
           </Text>
           <Text style={styles.price}>
-            {data[0].price.toLocaleString?.("vi-VN")}đ
+            {data.price?.toLocaleString?.("vi-VN") || '0'}đ
           </Text>
         </View>
         <View
           style={[styles.flex, { alignItems: "flex-start" }, layout.gap_xs]}
         >
           <FontAwesome name="star" size={20} color={"#fcaf23"} />
-          <Text style={text.gray_text}>{data[0]?.rating}</Text>
+          <Text style={text.gray_text}>{data.rating || '0'}</Text>
         </View>
       </View>
     </TouchableOpacity>

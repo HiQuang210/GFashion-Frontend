@@ -1,174 +1,182 @@
 import LikeButton from "@/components/LikeButton";
 import PageHeader from "@/components/PageHeader";
-import layout from "@/styles/layout";
 import text from "@/styles/text";
+import { productDetailStyles } from "@/styles/productDetail";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useLocalSearchParams } from "expo-router";
 import { translateColor } from "../../utils/helper";
 import {
-  SafeAreaView,
   ScrollView,
   View,
   Image,
   Text,
-  StyleSheet,
   TouchableOpacity,
   Dimensions,
+  ActivityIndicator,
 } from "react-native";
-import { useProductDetail } from "../../hooks/product/useProduct";
+import { useProductDetail } from "@/hooks/useProduct";
 import { useState } from "react";
 import Carousel from "react-native-reanimated-carousel";
-export default function BestSeller() {
-  const { id } = useLocalSearchParams();
-  const { data, isLoading, isError } = useProductDetail(id);
-  const [active, setActive] = useState(0);
-  const [sizeClo, setSize] = useState("S");
-  const { width } = Dimensions.get("window");
+import { Product, ProductSize, ProductVariant } from "@/types/product";
 
-  if (isLoading) return <Text>...Loading</Text>;
-  console.log("Detail");
-  console.log(data);
+export default function ProductDetail() {
+  const { id } = useLocalSearchParams();
+  const { width } = Dimensions.get("window");
+  
+  // Handle the id parameter properly - convert array to string if needed
+  const productId = Array.isArray(id) ? id[0] : id;
+  
+  const { data, isLoading, isError } = useProductDetail(productId);
+  const [activeVariantIndex, setActiveVariantIndex] = useState(0);
+  const [selectedSize, setSelectedSize] = useState("S");
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <View style={productDetailStyles.centerContainer}>
+        <ActivityIndicator size="large" color="#704F38" />
+        <Text style={productDetailStyles.loadingText}>Loading product details...</Text>
+      </View>
+    );
+  }
+
+  // Error state
+  if (isError || !data?.data) {
+    return (
+      <View style={productDetailStyles.centerContainer}>
+        <Text style={productDetailStyles.errorText}>Failed to load product details</Text>
+        <Text style={productDetailStyles.errorSubtext}>Please try again later</Text>
+      </View>
+    );
+  }
+
+  const product: Product = data.data;
+  const currentVariant = product.variants[activeVariantIndex];
+
+  const renderCarouselItem = ({ item }: { item: string }) => (
+    <Image
+      source={{ uri: item }}
+      style={productDetailStyles.carouselImage}
+      resizeMode="contain"
+    />
+  );
+
+  const renderSizeOption = (sizeOption: ProductSize) => (
+    <TouchableOpacity
+      key={sizeOption.size}
+      style={[
+        productDetailStyles.sizeButton,
+        selectedSize === sizeOption.size && productDetailStyles.sizeButtonActive
+      ]}
+      onPress={() => setSelectedSize(sizeOption.size)}
+      disabled={sizeOption.stock === 0}
+    >
+      <Text
+        style={[
+          productDetailStyles.sizeText,
+          selectedSize === sizeOption.size && productDetailStyles.sizeTextActive,
+          sizeOption.stock === 0 && productDetailStyles.sizeTextDisabled
+        ]}
+      >
+        {sizeOption.size}
+      </Text>
+    </TouchableOpacity>
+  );
+
+  const renderColorOption = (variant: ProductVariant, index: number) => (
+    <TouchableOpacity
+      key={variant.color}
+      style={[
+        productDetailStyles.colorButton,
+        { backgroundColor: translateColor(variant.color) }
+      ]}
+      onPress={() => {
+        setActiveVariantIndex(index);
+        // Reset size selection when changing color
+        if (variant.sizes.length > 0) {
+          setSelectedSize(variant.sizes[0].size);
+        }
+      }}
+    >
+      {index === activeVariantIndex && <View style={productDetailStyles.colorButtonSelected} />}
+    </TouchableOpacity>
+  );
 
   return (
-    <View style={{ backgroundColor: "#fff" }}>
-      <ScrollView style={{ position: "relative" }}>
-        <View
-          style={{
-            position: "absolute",
-            zIndex: 10,
-            top: 40,
-            width: "100%",
-          }}
-        >
+    <View style={productDetailStyles.container}>
+      <ScrollView style={productDetailStyles.scrollContainer}>
+        {/* Header */}
+        <View style={productDetailStyles.headerContainer}>
           <PageHeader content={""} />
           <LikeButton />
         </View>
-        <View
-          style={{
-            borderBottomWidth: 1,
-            borderColor: "#ededed",
-            height: 401,
-          }}
-        >
+
+        {/* Image Carousel */}
+        <View style={productDetailStyles.imageContainer}>
           <Carousel
-            width={width * 1}
+            width={width}
             height={400}
             autoPlay={false}
-            data={data.data.images}
+            data={product.images}
             scrollAnimationDuration={500}
-            renderItem={({ item }) => (
-              <Image
-                source={{ uri: item as any }}
-                style={{ width: "100%", height: 400 }}
-                resizeMode="contain"
-              />
-            )}
+            renderItem={renderCarouselItem}
           />
         </View>
-        <View style={{ marginTop: 20, marginHorizontal: 10 }}>
-          <View style={{ marginBottom: 10 }}>
-            <View
-              style={[layout.flex_row, { justifyContent: "space-between" }]}
-            >
-              <Text
-                style={{
-                  fontSize: 30,
-                  fontFamily: "Inter",
-                  fontWeight: 500,
-                  color: "#704F38",
-                }}
-              >
-                {data.data.price.toLocaleString?.("vi-VN")}đ
+
+        {/* Product Info */}
+        <View style={productDetailStyles.contentContainer}>
+          <View style={productDetailStyles.productInfoSection}>
+            {/* Price and Rating */}
+            <View style={productDetailStyles.priceRatingContainer}>
+              <Text style={productDetailStyles.priceText}>
+                {product.price.toLocaleString("vi-VN")}đ
               </Text>
-              <View
-                style={[
-                  styles.flex,
-                  { alignItems: "flex-start" },
-                  layout.gap_xs,
-                ]}
-              >
-                <FontAwesome name="star" size={20} color={"#fcaf23"} />
-                <Text style={text.gray_text}>0</Text>
+              <View style={productDetailStyles.ratingContainer}>
+                <FontAwesome name="star" size={20} color="#fcaf23" />
+                <Text style={[productDetailStyles.ratingText, text.gray_text]}>
+                  {product.rating || 0}
+                </Text>
               </View>
             </View>
 
-            <Text style={{ marginTop: 5, fontSize: 19, fontFamily: "Inter" }}>
-              {data.data.name}
-            </Text>
+            {/* Product Name */}
+            <Text style={productDetailStyles.productName}>{product.name}</Text>
 
-            <View style={{ marginTop: 25 }}>
-              <Text
-                style={{ fontSize: 17, fontFamily: "Inter", marginBottom: 7 }}
-              >
-                Chi tiết sản phẩm
+            {/* Product Details */}
+            <View style={productDetailStyles.detailsSection}>
+              <Text style={productDetailStyles.sectionTitle}>Chi tiết sản phẩm</Text>
+              <Text style={productDetailStyles.materialText}>
+                Chất liệu: {product.material}
               </Text>
-              <Text style={{ fontFamily: "Inter", color: "#797979" }}>
-                Chất liệu: {data.data.material}
-              </Text>
-              <Text style={{ fontFamily: "Inter", color: "#797979" }}>
-                {data.data.description}
+              <Text style={productDetailStyles.descriptionText}>
+                {product.description}
               </Text>
             </View>
           </View>
-          <View
-            style={{ width: "100%", borderWidth: 0.75, borderColor: "#ededed" }}
-          ></View>
-          <View style={{ marginTop: 10 }}>
-            <View>
-              <Text
-                style={{ fontSize: 17, fontFamily: "Inter", marginBottom: 7 }}
-              >
-                Select Size
-              </Text>
-              <View style={[layout.flex_row, layout.gap_s]}>
-                {data.data.variants[active].sizes.map((size: any) => {
-                  return (
-                    <TouchableOpacity
-                      style={
-                        size.size === sizeClo ? styles.size_active : styles.size
-                      }
-                      key={size.size}
-                      onPress={() => setSize(size.size)}
-                    >
-                      <Text
-                        style={
-                          size.size === sizeClo
-                            ? styles.text_active
-                            : styles.text
-                        }
-                      >
-                        {size.size}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
+
+          <View style={productDetailStyles.divider} />
+
+          {/* Size and Color Selection */}
+          <View style={productDetailStyles.selectionSection}>
+            {/* Size Selection */}
+            {currentVariant?.sizes && currentVariant.sizes.length > 0 && (
+              <View style={productDetailStyles.sizeSection}>
+                <Text style={productDetailStyles.sectionTitle}>Select Size</Text>
+                <View style={productDetailStyles.optionsContainer}>
+                  {currentVariant.sizes.map(renderSizeOption)}
+                </View>
               </View>
-            </View>
-            <View style={{ marginTop: 15 }}>
-              <Text
-                style={{ fontSize: 17, fontFamily: "Inter", marginBottom: 7 }}
-              >
-                Select Color:
-              </Text>
-              <View style={[layout.flex_row, layout.gap_s]}>
-                {data?.data?.variants.map((color: any, index: any) => {
-                  return (
-                    <TouchableOpacity
-                      style={[
-                        { backgroundColor: translateColor(color.color) },
-                        styles.round,
-                      ]}
-                      key={color.color}
-                      onPress={() => setActive(index)}
-                    >
-                      {index === active ? (
-                        <View style={styles.round_sm}></View>
-                      ) : null}
-                    </TouchableOpacity>
-                  );
-                })}
+            )}
+
+            {/* Color Selection */}
+            {product.variants && product.variants.length > 0 && (
+              <View style={productDetailStyles.colorSection}>
+                <Text style={productDetailStyles.sectionTitle}>Select Color:</Text>
+                <View style={productDetailStyles.optionsContainer}>
+                  {product.variants.map(renderColorOption)}
+                </View>
               </View>
-            </View>
+            )}
           </View>
         </View>
       </ScrollView>
@@ -176,52 +184,7 @@ export default function BestSeller() {
   );
 }
 
-const styles = StyleSheet.create({
-  flex: {
-    display: "flex",
-    flexDirection: "row",
-  },
-  round: {
-    width: 35,
-    height: 35,
-    borderRadius: 30,
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  round_sm: {
-    width: 20,
-    height: 20,
-    borderRadius: 30,
-    backgroundColor: "#fff",
-  },
-  size: {
-    width: 40,
-
-    borderWidth: 1,
-    borderColor: "#ededed",
-    borderRadius: 10,
-  },
-  size_active: {
-    width: 40,
-    backgroundColor: "#704F38",
-    borderWidth: 1,
-
-    borderRadius: 10,
-  },
-  text: {
-    textAlign: "center",
-    paddingVertical: 7,
-  },
-  text_active: {
-    textAlign: "center",
-    paddingVertical: 7,
-    color: "#FFF",
-  },
-});
-
-BestSeller.options = {
-  tabBarStyle: { display: "none" }, // ẩn thanh bar khi vào tab này
-  tabBarButton: () => null, // không hiển thị icon trong tab
+ProductDetail.options = {
+  tabBarStyle: { display: "none" },
+  tabBarButton: () => null,
 };

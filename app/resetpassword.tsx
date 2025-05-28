@@ -7,7 +7,7 @@ import Input from "@/components/Input";
 import Title from "@/components/Title";
 import AccessButton from "@/components/AccessButton";
 import BackButton from "@/components/BackButton";
-import { AuthAPI } from "@/api/services/auth";
+import { AuthAPI } from "@/api/services/UserService";
 import { styles } from "@/styles/resetpass";
 import { useToast } from "@/hooks/useToast"; 
 interface FormData {

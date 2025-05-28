@@ -8,13 +8,14 @@ import { useUser } from "../hooks/useUser";
 import { useEffect, useState } from "react";
 
 export default function HomeHeader() {
-  const [userId, setUserId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     AsyncStorage.getItem("userId")
       .then((id) => {
         console.log("User ID:", id);
-        setUserId(id);
+        // Convert null to undefined for type compatibility
+        setUserId(id || undefined);
       })
       .catch((err) => console.error("AsyncStorage error:", err));
   }, []);
@@ -25,19 +26,28 @@ export default function HomeHeader() {
     return <Text>loading...</Text>;
   }
 
+  // Add null/undefined check for user and user.data
+  if (!user || !user.data) {
+    return <Text>User data not available</Text>;
+  }
+
   return (
     <View style={{ marginBottom: 15 }}>
       <View style={[layout.flex_row, { justifyContent: "space-between" }]}>
-        <View>
-          <Text style={styles.sub_title_text}>Welcome back,</Text>
-          <Text style={styles.main_title_text}>{user.data.firstName}</Text>
-          {user.data?.img && (
-            <Image
-              source={{ uri: user.data.img }}
-              style={{ width: 100, height: 100 }}
-              onError={(e) => console.log("Lỗi load ảnh:", e.nativeEvent.error)}
-            />
-          )}
+        <View style={[layout.flex_row, { alignItems: "center" }]}>
+          <Image
+            source={
+              user.data?.img 
+                ? { uri: user.data.img }
+                : require("@/assets/images/default-avatar.png")
+            }
+            style={styles.avatar}
+            onError={(e) => console.log("Lỗi load ảnh:", e.nativeEvent.error)}
+          />
+          <View style={styles.textContainer}>
+            <Text style={styles.sub_title_text}>Welcome back,</Text>
+            <Text style={styles.main_title_text}>{user.data.firstName}</Text>
+          </View>
         </View>
         <Link href="/" style={[styles.notify_btn, { paddingTop: 2 }]}>
           <Ionicons
@@ -69,5 +79,16 @@ const styles = StyleSheet.create({
     height: 35,
     backgroundColor: "#ededed",
     borderRadius: 60,
+  },
+  avatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: "#f0f0f0",
+    marginRight: 15,
+  },
+  textContainer: {
+    flex: 1,
+    paddingLeft: 5,
   },
 });

@@ -1,15 +1,39 @@
-import { ScrollView, View, Text } from "react-native";
+import { View, Text } from "react-native";
 import SectionHeader from "./SectionHeader";
 import ProductItem from "./ProductItem";
 import layout from "@/styles/layout";
-import { useTop4BestSellingProducts } from "../hooks/product/useProducts";
+import { useTop3BestSellingProducts } from "../hooks/useProduct";
 
 export default function BestSeller() {
-  const { data, isLoading, isError } = useTop4BestSellingProducts();
-  console.log("best");
-  console.log(data);
+  const { data, isLoading, isError, error } = useTop3BestSellingProducts();
 
-  if (isLoading) return <Text>...Loading</Text>;
+  if (isLoading) {
+    return (
+      <View style={{ marginBottom: 20 }}>
+        <SectionHeader content="Best Seller" route="" />
+        <Text>Loading best sellers...</Text>
+      </View>
+    );
+  }
+
+  if (isError) {
+    return (
+      <View style={{ marginBottom: 20 }}>
+        <SectionHeader content="Best Seller" route="" />
+        <Text>Error loading best sellers: {error?.message}</Text>
+      </View>
+    );
+  }
+
+  if (!data?.data || data.data.length === 0) {
+    return (
+      <View style={{ marginBottom: 20 }}>
+        <SectionHeader content="Best Seller" route="" />
+        <Text>No best selling products found</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={{ marginBottom: 20 }}>
       <SectionHeader content="Best Seller" route="" />
@@ -19,10 +43,9 @@ export default function BestSeller() {
           layout.gap_l,
         ]}
       >
-        <ProductItem data={data.data} />
-        <ProductItem data={data.data} />
-        <ProductItem data={data.data} />
-        <ProductItem data={data.data} />
+        {data.data.slice(0, 3).map((product, index) => (
+          <ProductItem key={product._id || index} data={product} />
+        ))}
       </View>
     </View>
   );

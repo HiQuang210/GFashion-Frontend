@@ -1,6 +1,6 @@
 // hooks/useRegister.ts
 import { useMutation } from "@tanstack/react-query";
-import { AuthAPI } from "@/api/services/auth";
+import { AuthAPI } from "@/api/services/UserService";
 import { SignUpData } from "@/types/user";
 import { useToast } from "./useToast";
 import { useRouter } from "expo-router";

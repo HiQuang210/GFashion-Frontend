@@ -1,23 +1,37 @@
 import { useQuery } from "@tanstack/react-query";
-import { detailUser } from "@/api/services/auth";
+import { getUserDetail } from "@/api/services/UserService";
+import { UserDetailResponse } from "@/types/user";
 
-export function useUser(id) {
-  console.log("id: " + id);
+export function useUser(id: string | undefined) {
+  console.log("useUser - id:", id);
+  
   const {
     isLoading,
     data: user,
+    error,
     refetch,
-  } = useQuery({
+    isError,
+  } = useQuery<UserDetailResponse>({
     queryKey: ["user", id],
     queryFn: () => {
-      console.log("Calling detailUser with id:", id);
-      return detailUser(id);
+      console.log("Calling getUserDetail with id:", id);
+      return getUserDetail(id!); // Using non-null assertion since enabled ensures id exists
     },
-    enabled: !!id,
+    enabled: !!id, // Only run query if id exists
+    retry: 2, // Retry failed requests 2 times
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes (renamed from cacheTime)
   });
 
-  console.log("use user");
+  console.log("useUser - user data:", user);
+  console.log("useUser - isLoading:", isLoading);
+  console.log("useUser - error:", error);
 
-  console.log(user);
-  return { isLoading, user, refetch };
+  return { 
+    isLoading, 
+    user, 
+    error,
+    isError,
+    refetch 
+  };
 }

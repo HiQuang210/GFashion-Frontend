@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { LoginResponse } from "@/api/services/auth";
+import { LoginResponse } from "@/api/services/UserService";
 
 export function useAuth() {
   const storeAuthData = async (response: LoginResponse) => {

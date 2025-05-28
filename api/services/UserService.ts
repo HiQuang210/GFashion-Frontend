@@ -8,6 +8,11 @@ import {
   VerifyResetCodeData,
   ResetPasswordData,
   ApiResponse,
+  UserDetailResponse,
+  UpdateUserData,
+  UpdateUserResponse,
+  ChangePasswordData,
+  ChangePasswordResponse,
 } from "@/types/user";
 
 export class AuthAPI {
@@ -40,6 +45,39 @@ export class AuthAPI {
       return response.data;
     } catch (error: any) {
       console.error("Login error:", error.response?.data || error.message);
+      throw error;
+    }
+  }
+
+  static async getUserDetail(userId: string): Promise<UserDetailResponse> {
+    try {
+      const response = await axiosClient.get(`user/get-detail/${userId}`);
+      console.log("Get user detail successful:", response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("Get user detail error:", error.response?.data || error.message);
+      throw error;
+    }
+  }
+
+  static async updateUser(userId: string, data: UpdateUserData): Promise<UpdateUserResponse> {
+    try {
+      const response = await axiosClient.put(`user/${userId}`, data);
+      console.log("Update user successful:", response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("Update user error:", error.response?.data || error.message);
+      throw error;
+    }
+  }
+
+  static async changePassword(userId: string, data: ChangePasswordData): Promise<ChangePasswordResponse> {
+    try {
+      const response = await axiosClient.put(`user/${userId}/change-password`, data);
+      console.log("Change password successful:", response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("Change password error:", error.response?.data || error.message);
       throw error;
     }
   }
@@ -96,6 +134,9 @@ export class AuthAPI {
 export const requestEmailVerification = AuthAPI.requestEmailVerification;
 export const signUp = AuthAPI.signUp;
 export const logIn = AuthAPI.signIn;
+export const getUserDetail = AuthAPI.getUserDetail;
+export const updateUser = AuthAPI.updateUser;
+export const changePassword = AuthAPI.changePassword;
 export const requestPasswordReset = AuthAPI.requestPasswordReset;
 export const verifyResetCode = AuthAPI.verifyResetCode;
 export const resetPassword = AuthAPI.resetPassword;

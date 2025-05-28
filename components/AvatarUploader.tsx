@@ -95,7 +95,7 @@ export default function AvatarUploader({
               ? { uri: image }
               : userAvatar
               ? { uri: userAvatar }
-              : require("../assets/images/sbcf-default-avatar.png")
+              : require("../assets/images/default-avatar.png")
           }
           style={styles.img}
         />

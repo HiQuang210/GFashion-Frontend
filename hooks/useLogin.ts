@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { logIn, LoginData, LoginResponse } from "@/api/services/auth";
+import { logIn, LoginData, LoginResponse } from "@/api/services/UserService";
 import { useAuth } from "./useAuth";
 import { useToast } from "./useToast";
 import { useRouter } from "expo-router";
