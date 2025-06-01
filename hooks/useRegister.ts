@@ -1,6 +1,6 @@
 // hooks/useRegister.ts
 import { useMutation } from "@tanstack/react-query";
-import { AuthAPI } from "@/api/services/UserService";
+import { UserAPI } from "@/api/services/UserService";
 import { SignUpData } from "@/types/user";
 import { useToast } from "./useToast";
 import { useRouter } from "expo-router";
@@ -10,7 +10,7 @@ export function useRegister() {
   const { showSuccessToast, showErrorToast } = useToast();
   
   const mutation = useMutation({
-    mutationFn: (signupData: SignUpData) => AuthAPI.requestEmailVerification(signupData),
+    mutationFn: (signupData: SignUpData) => UserAPI.requestEmailVerification(signupData),
     onSuccess: () => {
       showSuccessToast(
         "Registration Initiated",

@@ -1,6 +1,5 @@
 import { Text, View } from "react-native";
 import BackButton from "./BackButton";
-import layout from "@/styles/layout";
 import text from "@/styles/text";
 
 type InputProps = {

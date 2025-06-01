@@ -4,13 +4,14 @@ import HomeHeader from "@/components/HomeHeader";
 import NewSection from "@/components/NewSection";
 import SearchBar from "@/components/SearchBar";
 import Slider from "@/components/Slider";
-import { SafeAreaView, View, StyleSheet, ScrollView } from "react-native";
+import { SafeAreaView, StyleSheet, ScrollView } from "react-native";
 
 export default function HomePage() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
-        style={{ marginTop: 0, marginHorizontal: 20 }}
+        contentContainerStyle={{ flexGrow: 1 }}
+        style={{ marginHorizontal: 20 }}
         showsVerticalScrollIndicator={false}
       >
         <HomeHeader />
@@ -26,6 +27,8 @@ export default function HomePage() {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     backgroundColor: "#f9f9f9",
   },
 });
+

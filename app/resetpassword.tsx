@@ -7,7 +7,7 @@ import Input from "@/components/Input";
 import Title from "@/components/Title";
 import AccessButton from "@/components/AccessButton";
 import BackButton from "@/components/BackButton";
-import { AuthAPI } from "@/api/services/UserService";
+import { UserAPI } from "@/api/services/UserService";
 import { styles } from "@/styles/resetpass";
 import { useToast } from "@/hooks/useToast"; 
 interface FormData {
@@ -63,7 +63,7 @@ export default function VerifyResetCode() {
   const handleVerifyCode = async (verifyData: any) => {
     console.log("Sending verify request with:", verifyData);
     
-    const verifyResponse = await AuthAPI.verifyResetCode(verifyData);
+    const verifyResponse = await UserAPI.verifyResetCode(verifyData);
 
     if (verifyResponse.status !== "OK") {
       showErrorToast(
@@ -79,7 +79,7 @@ export default function VerifyResetCode() {
   const handlePasswordReset = async (resetData: any) => {
     console.log("Sending reset password request");
     
-    const resetResponse = await AuthAPI.resetPassword(resetData);
+    const resetResponse = await UserAPI.resetPassword(resetData);
     
     if (resetResponse.status === "OK") {
       showSuccessToast(

@@ -30,7 +30,7 @@ export default function AvatarUploader({
 
   const goToProfile = async () => {
     await AsyncStorage.setItem("userId", userId);
-    router.push("/homepage");
+    router.push("/tabs/homepage");
   };
 
   const pickImage = async () => {

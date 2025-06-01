@@ -1,5 +1,4 @@
 import { Tabs } from "expo-router";
-
 import { View } from "react-native";
 import Feather from "@expo/vector-icons/Feather";
 
@@ -8,12 +7,12 @@ function TabIcon({ name, focused }: { name: "home" | "shopping-cart" | "heart" |
     <View
       style={{
         backgroundColor: focused ? "#fff" : "transparent",
-        marginTop: 25,
-        borderRadius: 99,
+        borderRadius: 50,
         alignItems: "center",
         justifyContent: "center",
         width: 50,
         height: 50,
+        marginTop: 20, 
       }}
     >
       <Feather name={name} size={24} color={focused ? "#6C4B3C" : "#797979"} />
@@ -31,8 +30,8 @@ export default function TabLayout() {
           position: "absolute",
           bottom: 25,
           marginHorizontal: 20,
-          height: 70,
-          borderRadius: 30,
+          height: 60,
+          borderRadius: 25,
           backgroundColor: "#1F2029",
           overflow: "hidden",
         },

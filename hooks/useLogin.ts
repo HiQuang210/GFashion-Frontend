@@ -23,7 +23,7 @@ export function useLogIn() {
         );
 
         // Navigate to homepage
-        router.replace("/homepage");
+        router.replace("/tabs/homepage");
       } catch (error) {
         console.error("Error storing auth data:", error);
         showErrorToast("Login Error", "Failed to save login data");

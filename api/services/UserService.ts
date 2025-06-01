@@ -15,7 +15,7 @@ import {
   ChangePasswordResponse,
 } from "@/types/user";
 
-export class AuthAPI {
+export class UserAPI {
   static async requestEmailVerification(formData: SignUpData): Promise<ApiResponse> {
     try {
       const response = await axiosClient.post("user/request-email-verification", formData);
@@ -131,15 +131,15 @@ export class AuthAPI {
   }
 }
 
-export const requestEmailVerification = AuthAPI.requestEmailVerification;
-export const signUp = AuthAPI.signUp;
-export const logIn = AuthAPI.signIn;
-export const getUserDetail = AuthAPI.getUserDetail;
-export const updateUser = AuthAPI.updateUser;
-export const changePassword = AuthAPI.changePassword;
-export const requestPasswordReset = AuthAPI.requestPasswordReset;
-export const verifyResetCode = AuthAPI.verifyResetCode;
-export const resetPassword = AuthAPI.resetPassword;
-export const signOut = AuthAPI.signOut;
+export const requestEmailVerification = UserAPI.requestEmailVerification;
+export const signUp = UserAPI.signUp;
+export const logIn = UserAPI.signIn;
+export const getUserDetail = UserAPI.getUserDetail;
+export const updateUser = UserAPI.updateUser;
+export const changePassword = UserAPI.changePassword;
+export const requestPasswordReset = UserAPI.requestPasswordReset;
+export const verifyResetCode = UserAPI.verifyResetCode;
+export const resetPassword = UserAPI.resetPassword;
+export const signOut = UserAPI.signOut;
 
 export { LoginData, LoginResponse };

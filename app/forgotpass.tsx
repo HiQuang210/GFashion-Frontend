@@ -7,7 +7,7 @@ import Input from "@/components/Input";
 import Title from "@/components/Title";
 import AccessButton from "@/components/AccessButton";
 import BackButton from "@/components/BackButton";
-import { AuthAPI } from "@/api/services/UserService";
+import { UserAPI } from "@/api/services/UserService";
 import { RequestPasswordResetData } from "@/types/user";
 import { useToast } from "@/hooks/useToast"; 
 
@@ -19,7 +19,7 @@ export default function ForgotPass() {
   const onSubmit = async (data: RequestPasswordResetData) => {
     setIsLoading(true);
     try {
-      const response = await AuthAPI.requestPasswordReset(data);
+      const response = await UserAPI.requestPasswordReset(data);
       
       if (response.status === "OK") {
         showSuccessToast(

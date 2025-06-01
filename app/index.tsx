@@ -1,6 +1,5 @@
-import { View, StyleSheet, Text, Image } from "react-native";
+import { View, StyleSheet, Text, Image, ScrollView } from "react-native";
 import { Link, router } from "expo-router";
-
 import Svg, { Circle } from "react-native-svg";
 import text from "@/styles/text";
 import link from "@/styles/link";
@@ -10,9 +9,9 @@ export default function Index() {
   const handleGetStarted = () => {
     router.push("/onboarding");
   };
-  
+
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.scrollContent} style={styles.container}>
       <Svg height="50%" width="50%" viewBox="0 0 100 100" style={styles.circle}>
         <Circle
           cx="25"
@@ -24,12 +23,7 @@ export default function Index() {
         />
       </Svg>
 
-      <Svg
-        height="100%"
-        width="100%"
-        viewBox="0 0 100 100"
-        style={styles.circle}
-      >
+      <Svg height="100%" width="100%" viewBox="0 0 100 100" style={styles.circle}>
         <Circle
           cx="100"
           cy="35"
@@ -73,8 +67,7 @@ export default function Index() {
       </View>
 
       <Text style={text.base_text}>
-        The <Text style={text.brown_text}>Fashion App</Text> That Make You Look
-        Your Best
+        The <Text style={text.brown_text}>Fashion App</Text> That Make You Look Your Best
       </Text>
 
       <Text style={text.sub_text}>
@@ -87,20 +80,13 @@ export default function Index() {
         style={[link.btn_link, link.btn_link_welcome]} 
       />
 
-      <View
-        style={{
-          flexDirection: "row",
-          flexWrap: "wrap",
-          gap: 4,
-          justifyContent: "center",
-        }}
-      >
+      <View style={styles.signInLinkContainer}>
         <Text style={styles.text_link}>Already have an account?</Text>
         <Link href="/login" style={styles.link}>
           Sign In
         </Link>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -108,7 +94,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    position: "relative",
+  },
+  scrollContent: {
+    alignItems: "center",
+    paddingBottom: 40,
   },
   container_images: {
     flexDirection: "row",
@@ -125,16 +114,6 @@ const styles = StyleSheet.create({
   circle: {
     position: "absolute",
   },
-
-  round: {
-    width: 170,
-    height: 170,
-    borderColor: "#797979",
-    borderWidth: 1,
-    clip: "circle(53.4% at 22% 28%)",
-    backgroundColor: "#000",
-  },
-
   text_link: {
     fontFamily: "Inter",
     fontSize: 16,
@@ -147,5 +126,11 @@ const styles = StyleSheet.create({
     color: "#704F38",
     textDecorationLine: "underline",
     textDecorationColor: "#704F38",
+  },
+  signInLinkContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 4,
+    justifyContent: "center",
   },
 });
