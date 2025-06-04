@@ -10,7 +10,7 @@ export default function HomePage() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 50 }}
         style={{ marginHorizontal: 20 }}
         showsVerticalScrollIndicator={false}
       >

@@ -24,7 +24,6 @@ export default function RootLayout() {
           
           {/* Password Reset Flow */}
           <Stack.Screen name="forgotpass" options={{ title: "forgotpass" }} />
-          <Stack.Screen name="resetpass" options={{ title: "resetpass" }} />
           <Stack.Screen name="resetpassword" options={{ title: "resetpassword" }} />
           
           {/* Profile Setup */}
@@ -33,7 +32,7 @@ export default function RootLayout() {
           <Stack.Screen name="enterlocation" options={{ title: "enterlocation" }} />
           
           {/* Main App Screens */}
-          <Stack.Screen name="homepage" options={{ title: "homepage" }} />
+          <Stack.Screen name="homepage" options={{ title: "tabs/homepage" }} />
           <Stack.Screen name="settings" options={{ title: "settings" }} />
           <Stack.Screen name="changeInfo" options={{ title: "changeInfo" }} />
         </Stack>

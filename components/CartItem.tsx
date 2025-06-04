@@ -18,7 +18,7 @@ export default function CartItem() {
       ]}
     >
       <Image
-        source={require("../assets/images/221124_maverik_0_25_9335d9a2d67d4f719f342f4a533d80f1_master.webp")}
+        source={require("@/assets/images/221124_maverik_0_25_9335d9a2d67d4f719f342f4a533d80f1_master.webp")}
         resizeMode="stretch"
         style={{ width: 100, height: 100, borderRadius: 10 }}
       />

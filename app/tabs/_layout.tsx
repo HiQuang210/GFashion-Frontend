@@ -34,6 +34,7 @@ export default function TabLayout() {
           borderRadius: 25,
           backgroundColor: "#1F2029",
           overflow: "hidden",
+          borderTopWidth: 0, 
         },
       }}
     >

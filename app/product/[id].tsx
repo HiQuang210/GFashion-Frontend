@@ -4,7 +4,7 @@ import text from "@/styles/text";
 import { productDetailStyles } from "@/styles/productDetail";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useLocalSearchParams } from "expo-router";
-import { translateColor } from "../../utils/helper";
+import { translateColor } from "@/utils/helper";
 import {
   ScrollView,
   View,

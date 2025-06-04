@@ -2,7 +2,7 @@ import layout from "@/styles/layout";
 import link from "@/styles/link";
 import text from "@/styles/text";
 import { View, Text, TouchableOpacity } from "react-native";
-import { useLogout } from "../hooks/useLogout";
+import { useLogout } from "@/hooks/useLogout";
 import { Dispatch, SetStateAction } from "react";
 
 interface props {

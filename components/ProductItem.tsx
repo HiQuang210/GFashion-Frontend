@@ -21,22 +21,28 @@ export default function ProductItem({ data }: ProductItemProps) {
       onPress={() =>
         router.push({ pathname: "/product/[id]", params: { id: data._id } })
       }
-      style={{ position: "relative" }}
+      style={styles.container}
     >
-      <LikeButton />
-      <View style={layout.margin_bottom_xs}>
+      {/* Image container với favorite button */}
+      <View style={styles.imageContainer}>
         <Image
           source={{ uri: data.images?.[0] || '' }}
           resizeMode="stretch"
           style={styles.img}
         />
+        {/* Favorite button positioned absolutely */}
+        <View style={styles.favoriteButton}>
+          <LikeButton />
+        </View>
       </View>
-      <View style={[styles.flex, { justifyContent: "space-between" }]}>
-        <View>
+
+      {/* Product info container */}
+      <View style={styles.productInfo}>
+        <View style={styles.leftInfo}>
           <Text
             numberOfLines={1}
             ellipsizeMode="tail"
-            style={[styles.name_product, { width: 120 }]}
+            style={styles.name_product}
           >
             {data.name || 'Unknown Product'}
           </Text>
@@ -44,11 +50,13 @@ export default function ProductItem({ data }: ProductItemProps) {
             {data.price?.toLocaleString?.("vi-VN") || '0'}đ
           </Text>
         </View>
-        <View
-          style={[styles.flex, { alignItems: "flex-start" }, layout.gap_xs]}
-        >
-          <FontAwesome name="star" size={20} color={"#fcaf23"} />
-          <Text style={text.gray_text}>{data.rating || '0'}</Text>
+        
+        {/* Rating section */}
+        <View style={styles.ratingContainer}>
+          <FontAwesome name="star" size={16} color={"#fcaf23"} />
+          <Text style={[text.gray_text, styles.ratingText]}>
+            {data.rating || '0'}
+          </Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -56,21 +64,49 @@ export default function ProductItem({ data }: ProductItemProps) {
 }
 
 const styles = StyleSheet.create({
-  flex: {
-    display: "flex",
-    flexDirection: "row",
+  container: {
+    position: "relative",
+    width: "100%",
+  },
+  imageContainer: {
+    position: "relative",
+    marginBottom: 8,
   },
   img: {
-    width: 160,
-    height: 160,
+    width: "100%",
+    height: 185,
     borderRadius: 20,
+  },
+  favoriteButton: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    zIndex: 1,
+  },
+  productInfo: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+  leftInfo: {
+    flex: 1,
+    marginRight: 8,
   },
   name_product: {
     fontSize: 12,
     fontFamily: "Inter",
+    marginBottom: 4,
   },
   price: {
     fontSize: 16,
     fontWeight: "600",
+  },
+  ratingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  ratingText: {
+    fontSize: 12,
   },
 });

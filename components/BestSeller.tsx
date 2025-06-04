@@ -1,8 +1,10 @@
-import { View, Text } from "react-native";
+import { View, Text, ScrollView, Dimensions } from "react-native";
 import SectionHeader from "./SectionHeader";
 import ProductItem from "./ProductItem";
 import layout from "@/styles/layout";
-import { useTop3BestSellingProducts } from "../hooks/useProduct";
+import { useTop3BestSellingProducts } from "@/hooks/useProduct";
+
+const { width: screenWidth } = Dimensions.get('window');
 
 export default function BestSeller() {
   const { data, isLoading, isError, error } = useTop3BestSellingProducts();
@@ -34,19 +36,34 @@ export default function BestSeller() {
     );
   }
 
+  const itemWidth = screenWidth * 0.45; 
+  const itemSpacing = 16;
+
   return (
-    <View style={{ marginBottom: 20 }}>
+    <View style={{ marginBottom: 40 }}>
       <SectionHeader content="Best Seller" route="" />
-      <View
-        style={[
-          { display: "flex", flexDirection: "row", flexWrap: "wrap" },
-          layout.gap_l,
-        ]}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+        }}
+        decelerationRate="fast"
+        snapToInterval={itemWidth + itemSpacing}
+        snapToAlignment="start"
       >
         {data.data.slice(0, 3).map((product, index) => (
-          <ProductItem key={product._id || index} data={product} />
+          <View 
+            key={product._id || index}
+            style={{
+              width: itemWidth,
+              marginRight: index < data.data.slice(0, 3).length - 1 ? itemSpacing : 0,
+            }}
+          >
+            <ProductItem data={product} />
+          </View>
         ))}
-      </View>
+      </ScrollView>
     </View>
   );
 }

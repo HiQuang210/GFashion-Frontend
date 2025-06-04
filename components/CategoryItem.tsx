@@ -14,10 +14,14 @@ type InputProps = {
 
 export default function CategoryItem({ content }: InputProps) {
   const imageMap: { [key: string]: ImageSourcePropType } = {
-    tshirt: require("../assets/images/tshirt.png"),
-    pant: require("../assets/images/pant.png"),
-    dress: require("../assets/images/dress.png"),
-    jacket: require("../assets/images/jacket.png"),
+    tshirt: require("@/assets/images/tshirt.png"),
+    pant: require("@/assets/images/pant.png"),
+    dress: require("@/assets/images/dress.png"),
+    jacket: require("@/assets/images/jacket.png"),
+    shoes: require("@/assets/images/shoes.png"),
+    accessories: require("@/assets/images/accessories.png"),
+    bags: require("@/assets/images/bags.png"),
+    hat: require("@/assets/images/hat.png"),
   };
   return (
     <View style={layout.flex_col}>

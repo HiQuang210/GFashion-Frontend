@@ -1,19 +1,37 @@
-import { Text, TouchableOpacity, View, StyleSheet } from "react-native";
-
-import layout from "@/styles/layout";
+import { View, StyleSheet, ScrollView } from "react-native";
 import SectionHeader from "./SectionHeader";
 import CategoryItem from "./CategoryItem";
 
 export default function Category() {
+  const categories = [
+    "tshirt",
+    "pant", 
+    "jacket",
+    "dress",
+    "shoes",
+    "accessories",
+    "bags",
+    "hat"
+  ];
+
   return (
     <View style={{ marginBottom: 30 }}>
       <SectionHeader content="Category" route="" />
-      <View style={[layout.flex_row, layout.gap_m]}>
-        <CategoryItem content="tshirt" />
-        <CategoryItem content="pant" />
-        <CategoryItem content="jacket" />
-        <CategoryItem content="dress" />
-      </View>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          gap: 16, 
+        }}
+        style={{ marginHorizontal: -16 }} 
+      >
+        {categories.map((category, index) => (
+          <View key={index} style={styles.categoryWrapper}>
+            <CategoryItem content={category} />
+          </View>
+        ))}
+      </ScrollView>
     </View>
   );
 }
@@ -24,5 +42,8 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 60,
+  },
+  categoryWrapper: {
+
   },
 });

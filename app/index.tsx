@@ -37,7 +37,7 @@ export default function Index() {
       <View style={styles.container_images}>
         <View style={styles.column}>
           <Image
-            source={require("../assets/images/Miguel-Label-mens-fashion-blogger-819x1024.jpg")}
+            source={require("@/assets/images/Miguel-Label-mens-fashion-blogger-819x1024.jpg")}
             style={{
               width: "100%",
               height: 450,
@@ -48,7 +48,7 @@ export default function Index() {
 
         <View style={styles.column}>
           <Image
-            source={require("../assets/images/Men_s-Summer-Fashion-613288.webp")}
+            source={require("@/assets/images/Men_s-Summer-Fashion-613288.webp")}
             style={{
               width: "100%",
               height: 300,
@@ -56,7 +56,7 @@ export default function Index() {
             }}
           />
           <Image
-            source={require("../assets/images/shutterstock_1199713018-819x1024.jpg")}
+            source={require("@/assets/images/shutterstock_1199713018-819x1024.jpg")}
             style={{
               width: "100%",
               height: 150,
