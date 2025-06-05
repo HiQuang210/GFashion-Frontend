@@ -29,7 +29,7 @@ export default function NewSection() {
           <View 
             key={product._id || index}
             style={{ 
-              width: '48%', // Chiếm 48% chiều rộng, để lại 4% cho gap
+              width: '48%', 
               marginBottom: 12
             }}
           >

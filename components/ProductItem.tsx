@@ -1,7 +1,6 @@
 import { Image, Text, View, StyleSheet, TouchableOpacity } from "react-native";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Link, router } from "expo-router";
-import layout from "@/styles/layout";
+import { router } from "expo-router";
 import text from "@/styles/text";
 import LikeButton from "./LikeButton";
 import { Product } from "@/types/product";
@@ -11,7 +10,6 @@ interface ProductItemProps {
 }
 
 export default function ProductItem({ data }: ProductItemProps) {
-  // Add safety checks for data
   if (!data) {
     return <View><Text>No product data</Text></View>;
   }
@@ -23,20 +21,17 @@ export default function ProductItem({ data }: ProductItemProps) {
       }
       style={styles.container}
     >
-      {/* Image container với favorite button */}
       <View style={styles.imageContainer}>
         <Image
           source={{ uri: data.images?.[0] || '' }}
           resizeMode="stretch"
           style={styles.img}
         />
-        {/* Favorite button positioned absolutely */}
         <View style={styles.favoriteButton}>
           <LikeButton />
         </View>
       </View>
 
-      {/* Product info container */}
       <View style={styles.productInfo}>
         <View style={styles.leftInfo}>
           <Text
@@ -51,7 +46,6 @@ export default function ProductItem({ data }: ProductItemProps) {
           </Text>
         </View>
         
-        {/* Rating section */}
         <View style={styles.ratingContainer}>
           <FontAwesome name="star" size={16} color={"#fcaf23"} />
           <Text style={[text.gray_text, styles.ratingText]}>

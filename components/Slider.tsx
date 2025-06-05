@@ -49,7 +49,7 @@ export default function Slider() {
 
 const styles = StyleSheet.create({
   img: {
-    height: 150,
+    height: 160,
     borderRadius: 10,
     marginBottom: 10,
   },

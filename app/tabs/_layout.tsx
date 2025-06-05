@@ -2,7 +2,7 @@ import { Tabs } from "expo-router";
 import { View } from "react-native";
 import Feather from "@expo/vector-icons/Feather";
 
-function TabIcon({ name, focused }: { name: "home" | "shopping-cart" | "heart" | "message-circle" | "user"; focused: boolean }) {
+function TabIcon({ name, focused }: { name: "home" | "search" | "heart" | "shopping-cart" | "user"; focused: boolean }) {
   return (
     <View
       style={{
@@ -12,10 +12,10 @@ function TabIcon({ name, focused }: { name: "home" | "shopping-cart" | "heart" |
         justifyContent: "center",
         width: 50,
         height: 50,
-        marginTop: 20, 
+        marginTop: 20
       }}
     >
-      <Feather name={name} size={24} color={focused ? "#6C4B3C" : "#797979"} />
+      <Feather name={name} size={24} color={focused ? "#704F38" : "#797979"} />
     </View>
   );
 }
@@ -35,7 +35,7 @@ export default function TabLayout() {
           backgroundColor: "#1F2029",
           overflow: "hidden",
           borderTopWidth: 0, 
-        },
+        }
       }}
     >
       <Tabs.Screen
@@ -43,16 +43,15 @@ export default function TabLayout() {
         options={{
           tabBarIcon: ({ focused }) => (
             <TabIcon name="home" focused={focused} />
-          ),
+          )
         }}
       />
       <Tabs.Screen
-        name="cartpage"
+        name="searchpage"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon name="shopping-cart" focused={focused} />
-          ),
-          tabBarStyle: { display: "none" },
+            <TabIcon name="search" focused={focused} />
+          )
         }}
       />
       <Tabs.Screen
@@ -60,15 +59,15 @@ export default function TabLayout() {
         options={{
           tabBarIcon: ({ focused }) => (
             <TabIcon name="heart" focused={focused} />
-          ),
+          )
         }}
       />
       <Tabs.Screen
-        name="messagepage"
+        name="cartpage"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon name="message-circle" focused={focused} />
-          ),
+            <TabIcon name="shopping-cart" focused={focused} />
+          )
         }}
       />
       <Tabs.Screen
@@ -76,8 +75,7 @@ export default function TabLayout() {
         options={{
           tabBarIcon: ({ focused }) => (
             <TabIcon name="user" focused={focused} />
-          ),
-          tabBarStyle: { display: "none" },
+          )
         }}
       />
     </Tabs>

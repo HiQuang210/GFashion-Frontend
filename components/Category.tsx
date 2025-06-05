@@ -11,7 +11,8 @@ export default function Category() {
     "shoes",
     "accessories",
     "bags",
-    "hat"
+    "hat",
+    "other"
   ];
 
   return (

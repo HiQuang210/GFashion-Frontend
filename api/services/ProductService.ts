@@ -1,13 +1,11 @@
 import axiosClient from "@/api/axiosClient";
 import {
-  Product,
   GetProductsQuery,
   GetProductsResponse,
   GetProductDetailResponse,
   GetTotalPagesQuery,
   GetTotalPagesResponse,
   ProductSearchParams,
-  ApiResponse,
 } from "@/types/product";
 
 export class ProductAPI {

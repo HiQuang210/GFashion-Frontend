@@ -41,7 +41,7 @@ export default function Index() {
             style={{
               width: "100%",
               height: 450,
-              borderRadius: 70,
+              borderRadius: 40,
             }}
           />
         </View>
@@ -52,7 +52,7 @@ export default function Index() {
             style={{
               width: "100%",
               height: 300,
-              borderRadius: 70,
+              borderRadius: 30,
             }}
           />
           <Image
@@ -60,7 +60,7 @@ export default function Index() {
             style={{
               width: "100%",
               height: 150,
-              borderRadius: 50,
+              borderRadius: 30,
             }}
           />
         </View>

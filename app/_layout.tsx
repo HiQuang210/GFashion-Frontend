@@ -31,8 +31,14 @@ export default function RootLayout() {
           <Stack.Screen name="location" options={{ title: "location" }} />
           <Stack.Screen name="enterlocation" options={{ title: "enterlocation" }} />
           
-          {/* Main App Screens */}
+          {/* Main App Screens - Updated order */}
           <Stack.Screen name="homepage" options={{ title: "tabs/homepage" }} />
+          <Stack.Screen name="searchpage" options={{ title: "tabs/searchpage" }} />
+          <Stack.Screen name="wishlistpage" options={{ title: "tabs/wishlistpage" }} />
+          <Stack.Screen name="cartpage" options={{ title: "tabs/cartpage" }} />
+          <Stack.Screen name="profilepage" options={{ title: "tabs/profilepage" }} />
+          
+          {/* Other Screens */}
           <Stack.Screen name="settings" options={{ title: "settings" }} />
           <Stack.Screen name="changeInfo" options={{ title: "changeInfo" }} />
         </Stack>
