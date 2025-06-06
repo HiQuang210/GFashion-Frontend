@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderTopWidth: 1,
     borderTopColor: "#F0F0F0",
-    gap: 20,
+    gap: 20
   },
   paginationButton: {
     padding: 8,

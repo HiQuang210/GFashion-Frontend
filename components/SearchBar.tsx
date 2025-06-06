@@ -1,26 +1,38 @@
-import { Link } from "expo-router";
+import React from "react";
 import { TouchableOpacity, View, StyleSheet, TextInput } from "react-native";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Feather from "@expo/vector-icons/Feather";
 
-export default function SearchBar() {
+interface SearchBarProps {
+  value?: string;
+  onChangeText?: (text: string) => void;
+  onFilterPress?: () => void;
+  placeholder?: string;
+}
+
+export default function SearchBar({ 
+  value, 
+  onChangeText, 
+  onFilterPress, 
+  placeholder = "Search" 
+}: SearchBarProps) {
   return (
     <View style={styles.container}>
       <View style={styles.searchContainer}>
         <Feather name="search" size={24} color={"#704F38"} />
         <TextInput
-          placeholder="Search"
+          placeholder={placeholder}
+          value={value}
+          onChangeText={onChangeText}
           keyboardType="default"
           inputMode="text"
           style={styles.input}
         />
-        <TouchableOpacity style={styles.filterButton}>
-          <Link href="/" asChild>
-            <TouchableOpacity style={styles.filterButton}>
-              <AntDesign name="filter" size={24} color="black" />
-            </TouchableOpacity>
-          </Link>
-        </TouchableOpacity>
+        {onFilterPress && (
+          <TouchableOpacity style={styles.filterButton} onPress={onFilterPress}>
+            <AntDesign name="filter" size={24} color="#704F38" />
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
