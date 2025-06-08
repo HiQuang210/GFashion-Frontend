@@ -1,10 +1,12 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import {
   View,
   Text,
   SafeAreaView,
   FlatList,
+  TextInput,
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import SearchBar from "@/components/SearchBar";
 import ProductItem from "@/components/ProductItem";
@@ -15,6 +17,7 @@ import { ProductAPI } from "@/api/services/ProductService";
 import { Product } from "@/types/product";
 import { styles } from "@/styles/searchpage";
 import { CATEGORIES, SORT_OPTIONS, PRODUCERS } from "@/types/enum/filter";
+import { useLocalSearchParams } from "expo-router";
 
 interface FilterState {
   sortBy: string;
@@ -29,13 +32,26 @@ const INITIAL_FILTER_STATE: FilterState = {
 };
 
 export default function SearchPage() {
+  const inputRef = useRef<TextInput>(null);
+  const { autoFocus } = useLocalSearchParams(); 
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [currentPage, setCurrentPage] = useState(0);
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [filters, setFilters] = useState<FilterState>(INITIAL_FILTER_STATE);
 
-  // Fetch products with optimized query
+  useFocusEffect(
+    useCallback(() => {
+      if (autoFocus === "true" && inputRef.current) {
+        const timeout = setTimeout(() => {
+          inputRef.current?.focus();
+        }, 150);
+        return () => clearTimeout(timeout); // cleanup timeout
+      }
+    }, [autoFocus])
+  );
+  
   const { data: productsData, isLoading, refetch } = useQuery({
     queryKey: ["products", searchQuery, selectedCategory, currentPage, filters],
     queryFn: () => {
@@ -45,7 +61,6 @@ export default function SearchPage() {
         sortBy: filters.sortBy,
         sortOrder: filters.sortBy.includes("price-high") ? "desc" : "asc",
       };
-
       if (searchQuery) params.query = searchQuery;
       if (selectedCategory !== "all") params.type = selectedCategory;
       if (filters.selectedProducer) params.producer = filters.selectedProducer;
@@ -102,13 +117,26 @@ export default function SearchPage() {
     </View>
   );
 
+  const renderFooter = () => {
+    if (productsData?.data && productsData.data.length > 0) {
+      return (
+        <Pagination
+          currentPage={currentPage}
+          onPageChange={handlePageChange}
+        />
+      );
+    }
+    return null;
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header with Search Bar */}
       <View style={styles.header}>
         <SearchBar
+          inputRef={inputRef}
           value={searchQuery}
-          onChangeText={handleSearch}
+          onChangeText={setSearchQuery}
           onFilterPress={() => setShowFilterModal(true)}
         />
       </View>
@@ -139,17 +167,10 @@ export default function SearchPage() {
             }}
             onEndReachedThreshold={0.1}
             ListEmptyComponent={renderEmptyState}
+            ListFooterComponent={renderFooter}
           />
         )}
       </View>
-
-      {/* Pagination */}
-      {productsData?.data && productsData.data.length > 0 && (
-        <Pagination
-          currentPage={currentPage}
-          onPageChange={handlePageChange}
-        />
-      )}
 
       {/* Filter Modal */}
       <FilterModal

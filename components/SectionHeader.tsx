@@ -1,14 +1,14 @@
 import layout from "@/styles/layout";
 import link from "@/styles/link";
 import { Link } from "expo-router";
-import { Text, TouchableOpacity, View, StyleSheet } from "react-native";
+import { Text, View, StyleSheet } from "react-native";
 
 type InputProps = {
   content: string;
   route: string;
 };
 
-export default function SectionHeader({ content, route }: InputProps) {
+export default function SectionHeader({ content }: InputProps) {
   return (
     <View
       style={[
@@ -17,7 +17,7 @@ export default function SectionHeader({ content, route }: InputProps) {
       ]}
     >
       <Text style={styles.section_label}>{content}</Text>
-      <Link href={{ pathname: `/${route}` as any }} style={link.sub_link}>
+      <Link href={{ pathname: `/tabs/searchpage` }} style={link.sub_link}>
         See All
       </Link>
     </View>

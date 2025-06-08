@@ -10,13 +10,14 @@ interface UseNavigationOptions {
 
 export const useNavigation = (options: UseNavigationOptions = {}) => {
   const {
-    throttleTime = 1000,
-    debounceDelay = 100,
-    logErrors = true
+    throttleTime = 300,
+    debounceDelay = 50, 
+    logErrors = false  
   } = options;
 
   const navigationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastNavigationTime = useRef<number>(0);
+  const isNavigating = useRef<boolean>(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -25,17 +26,27 @@ export const useNavigation = (options: UseNavigationOptions = {}) => {
           clearTimeout(navigationTimeoutRef.current);
           navigationTimeoutRef.current = null;
         }
+        isNavigating.current = false;
       };
     }, [])
   );
 
   const safeNavigate = useCallback((
     path: string, 
-    method: 'push' | 'replace' | 'navigate' = 'replace'
+    method: 'push' | 'replace' | 'navigate' = 'navigate'
   ) => {
     const now = Date.now();
     const timeSinceLastNavigation = now - lastNavigationTime.current;
   
+    // Check if we're already navigating
+    if (isNavigating.current) {
+      if (logErrors) {
+        console.log('Navigation already in progress');
+      }
+      return false;
+    }
+
+    // More lenient throttling check
     if (timeSinceLastNavigation < throttleTime) {
       if (logErrors) {
         console.log(`Navigation throttled: ${timeSinceLastNavigation}ms < ${throttleTime}ms`);
@@ -44,12 +55,15 @@ export const useNavigation = (options: UseNavigationOptions = {}) => {
     }
     
     lastNavigationTime.current = now;
+    isNavigating.current = true;
    
+    // Clear any existing timeout
     if (navigationTimeoutRef.current) {
       clearTimeout(navigationTimeoutRef.current);
     }
    
-    navigationTimeoutRef.current = setTimeout(() => {
+    // Use shorter debounce or navigate immediately for better UX
+    const executeNavigation = () => {
       try {
         switch (method) {
           case 'push':
@@ -64,10 +78,21 @@ export const useNavigation = (options: UseNavigationOptions = {}) => {
         }
       } catch (error) {
         if (logErrors) {
-          console.log(`Navigation error to ${path}:`, error);
+          console.error(`Navigation error to ${path}:`, error);
         }
+      } finally {
+        // Reset navigation flag after a short delay
+        setTimeout(() => {
+          isNavigating.current = false;
+        }, 100);
       }
-    }, debounceDelay);
+    };
+
+    if (debounceDelay > 0) {
+      navigationTimeoutRef.current = setTimeout(executeNavigation, debounceDelay);
+    } else {
+      executeNavigation();
+    }
     
     return true;
   }, [throttleTime, debounceDelay, logErrors]);
@@ -84,37 +109,77 @@ export const useNavigation = (options: UseNavigationOptions = {}) => {
     return safeNavigate(path, 'replace');
   }, [safeNavigate]);
 
+  // Immediate navigation methods for critical flows
+  const immediateNavigate = useCallback((path: string, method: 'push' | 'replace' | 'navigate' = 'navigate') => {
+    isNavigating.current = true;
+    try {
+      switch (method) {
+        case 'push':
+          router.push(path as any);
+          break;
+        case 'replace':
+          router.replace(path as any);
+          break;
+        case 'navigate':
+          router.navigate(path as any);
+          break;
+      }
+      return true;
+    } catch (error) {
+      if (logErrors) {
+        console.error(`Immediate navigation error to ${path}:`, error);
+      }
+      return false;
+    } finally {
+      setTimeout(() => {
+        isNavigating.current = false;
+      }, 100);
+    }
+  }, [logErrors]);
+
   const goToLogin = useCallback(() => {
-    return replaceTo('/login');
-  }, [replaceTo]);
+    return immediateNavigate('/login', 'replace');
+  }, [immediateNavigate]);
 
   const goToSignUp = useCallback(() => {
-    return replaceTo('/signup');
-  }, [replaceTo]);
+    return immediateNavigate('/signup', 'replace');
+  }, [immediateNavigate]);
 
   const goToForgotPassword = useCallback(() => {
-    return pushTo('/forgotpass');
-  }, [pushTo]);
+    return immediateNavigate('/forgotpass', 'push');
+  }, [immediateNavigate]);
 
   const goBack = useCallback(() => {
+    if (isNavigating.current) {
+      return false;
+    }
+
+    isNavigating.current = true;
     try {
       if (router.canGoBack()) {
         router.back();
       } else {
-        replaceTo('/');
+        router.replace('/');
       }
+      return true;
     } catch (error) {
       if (logErrors) {
-        console.log('Go back error:', error);
+        console.error('Go back error:', error);
       }
+      return false;
+    } finally {
+      setTimeout(() => {
+        isNavigating.current = false;
+      }, 100);
     }
-  }, [replaceTo, logErrors]);
+  }, [logErrors]);
 
   const cleanup = useCallback(() => {
     if (navigationTimeoutRef.current) {
       clearTimeout(navigationTimeoutRef.current);
       navigationTimeoutRef.current = null;
     }
+    isNavigating.current = false;
   }, []);
 
   return {
@@ -122,6 +187,7 @@ export const useNavigation = (options: UseNavigationOptions = {}) => {
     pushTo,
     replaceTo,
     safeNavigate,
+    immediateNavigate,
     
     goToLogin,
     goToSignUp,
@@ -131,9 +197,12 @@ export const useNavigation = (options: UseNavigationOptions = {}) => {
     cleanup,
     
     canNavigate: () => {
+      if (isNavigating.current) return false;
       const now = Date.now();
       const timeSinceLastNavigation = now - lastNavigationTime.current;
       return timeSinceLastNavigation >= throttleTime;
-    }
+    },
+
+    isNavigating: () => isNavigating.current,
   };
 };

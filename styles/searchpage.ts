@@ -10,7 +10,7 @@ export const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 16,
     paddingTop: 10,
-    paddingBottom: 15,
+    paddingBottom: 5, 
     backgroundColor: "#fff",
     elevation: 2,
     shadowColor: "#000",
@@ -24,11 +24,16 @@ export const styles = StyleSheet.create({
   },
   productsList: {
     padding: 16,
-    gap: 16,
+    paddingBottom: 100,
   },
   productItemContainer: {
     width: (screenWidth - 48) / 2,
-    marginBottom: 16,
+    marginBottom: 24, 
+    marginHorizontal: 4,
+  },
+  row: {
+    justifyContent: 'space-between',
+    paddingHorizontal: 8,
   },
   loadingContainer: {
     flex: 1,

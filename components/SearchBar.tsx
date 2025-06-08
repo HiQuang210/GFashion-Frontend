@@ -1,5 +1,5 @@
-import React from "react";
-import { TouchableOpacity, View, StyleSheet, TextInput } from "react-native";
+import React, { RefObject } from "react";
+import { TouchableOpacity, View, StyleSheet, TextInput, Pressable } from "react-native";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Feather from "@expo/vector-icons/Feather";
 
@@ -8,26 +8,46 @@ interface SearchBarProps {
   onChangeText?: (text: string) => void;
   onFilterPress?: () => void;
   placeholder?: string;
+  readOnly?: boolean;
+  onPress?: () => void;
+  inputRef?: RefObject<TextInput>;
 }
 
 export default function SearchBar({ 
   value, 
   onChangeText, 
   onFilterPress, 
-  placeholder = "Search" 
+  placeholder = "Search",
+  readOnly = false,
+  onPress,
+  inputRef,
 }: SearchBarProps) {
   return (
     <View style={styles.container}>
       <View style={styles.searchContainer}>
         <Feather name="search" size={24} color={"#704F38"} />
-        <TextInput
-          placeholder={placeholder}
-          value={value}
-          onChangeText={onChangeText}
-          keyboardType="default"
-          inputMode="text"
-          style={styles.input}
-        />
+        {readOnly && onPress ? (
+          <Pressable style={styles.input} onPress={onPress}>
+            <View pointerEvents="none">
+              <TextInput
+                value={value}
+                placeholder={placeholder}
+                editable={false}
+                style={[styles.input, { color: "#797979" }]}
+              />
+            </View>
+          </Pressable>
+        ) : (
+          <TextInput
+            ref={inputRef}
+            placeholder={placeholder}
+            value={value}
+            onChangeText={onChangeText}
+            keyboardType="default"
+            inputMode="text"
+            style={styles.input}
+          />
+        )}
         {onFilterPress && (
           <TouchableOpacity style={styles.filterButton} onPress={onFilterPress}>
             <AntDesign name="filter" size={24} color="#704F38" />
@@ -40,7 +60,7 @@ export default function SearchBar({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 20,
+    marginBottom: 10,
   },
   
   searchContainer: {

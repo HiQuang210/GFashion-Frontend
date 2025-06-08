@@ -5,17 +5,19 @@ import NewSection from "@/components/NewSection";
 import SearchBar from "@/components/SearchBar";
 import Slider from "@/components/Slider";
 import { SafeAreaView, StyleSheet, ScrollView } from "react-native";
+import { useRouter } from "expo-router";
 
 export default function HomePage() {
+  const router = useRouter();
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: 50 }}
-        style={{ marginHorizontal: 20 }}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 50 }} style={{ marginHorizontal: 20 }} showsVerticalScrollIndicator={false}>
         <HomeHeader />
-        <SearchBar />
+        <SearchBar
+          readOnly
+          onPress={() => router.push({ pathname: "/tabs/searchpage", params: { autoFocus: "true" } })}
+        />
         <Slider />
         <Category />
         <NewSection />

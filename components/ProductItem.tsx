@@ -61,20 +61,31 @@ const styles = StyleSheet.create({
   container: {
     position: "relative",
     width: "100%",
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 8,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
   },
   imageContainer: {
     position: "relative",
-    marginBottom: 8,
+    marginBottom: 12, 
   },
   img: {
     width: "100%",
-    height: 185,
-    borderRadius: 20,
+    height: 160,
+    borderRadius: 12,
   },
   favoriteButton: {
     position: "absolute",
-    top: 8,
-    right: 8,
+    top: 1,
+    right: 1,
     zIndex: 1,
   },
   productInfo: {
