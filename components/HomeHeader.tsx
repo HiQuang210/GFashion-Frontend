@@ -14,7 +14,6 @@ export default function HomeHeader() {
     AsyncStorage.getItem("userId")
       .then((id) => {
         console.log("User ID:", id);
-        // Convert null to undefined for type compatibility
         setUserId(id || undefined);
       })
       .catch((err) => console.error("AsyncStorage error:", err));
@@ -26,7 +25,6 @@ export default function HomeHeader() {
     return <Text>loading...</Text>;
   }
 
-  // Add null/undefined check for user and user.data
   if (!user || !user.data) {
     return <Text>User data not available</Text>;
   }

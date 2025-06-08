@@ -10,7 +10,6 @@ interface SearchBarProps {
   placeholder?: string;
   readOnly?: boolean;
   onPress?: () => void;
-  inputRef?: RefObject<TextInput>;
 }
 
 export default function SearchBar({ 
@@ -20,7 +19,6 @@ export default function SearchBar({
   placeholder = "Search",
   readOnly = false,
   onPress,
-  inputRef,
 }: SearchBarProps) {
   return (
     <View style={styles.container}>
@@ -39,7 +37,6 @@ export default function SearchBar({
           </Pressable>
         ) : (
           <TextInput
-            ref={inputRef}
             placeholder={placeholder}
             value={value}
             onChangeText={onChangeText}

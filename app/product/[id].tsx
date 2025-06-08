@@ -1,27 +1,19 @@
-import LikeButton from "@/components/LikeButton";
-import PageHeader from "@/components/PageHeader";
-import text from "@/styles/text";
-import { productDetailStyles } from "@/styles/productDetail";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
+import React, { useState } from "react";
+import { View, ScrollView, ActivityIndicator, Text } from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import { translateColor } from "@/utils/helper";
-import {
-  ScrollView,
-  View,
-  Image,
-  Text,
-  TouchableOpacity,
-  Dimensions,
-  ActivityIndicator,
-} from "react-native";
+
 import { useProductDetail } from "@/hooks/useProduct";
-import { useState } from "react";
-import Carousel from "react-native-reanimated-carousel";
-import { Product, ProductSize, ProductVariant } from "@/types/product";
+import { Product } from "@/types/product";
+
+import ProductHeader from "@/components/productdetail/Header";
+import ProductImageGallery from "@/components/productdetail/ImageGallery";
+import ProductInfo from "@/components/productdetail/Info";
+import ProductSelections from "@/components/productdetail/Selection";
+import ProductBottomBar from "@/components/productdetail/BottomBar";
+import { styles } from "@/styles/productDetail";
 
 export default function ProductDetail() {
   const { id } = useLocalSearchParams();
-  const { width } = Dimensions.get("window");
   
   // Handle the id parameter properly - convert array to string if needed
   const productId = Array.isArray(id) ? id[0] : id;
@@ -29,13 +21,14 @@ export default function ProductDetail() {
   const { data, isLoading, isError } = useProductDetail(productId);
   const [activeVariantIndex, setActiveVariantIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState("S");
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   // Loading state
   if (isLoading) {
     return (
-      <View style={productDetailStyles.centerContainer}>
+      <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color="#704F38" />
-        <Text style={productDetailStyles.loadingText}>Loading product details...</Text>
+        <Text style={styles.loadingText}>Loading product details...</Text>
       </View>
     );
   }
@@ -43,9 +36,9 @@ export default function ProductDetail() {
   // Error state
   if (isError || !data?.data) {
     return (
-      <View style={productDetailStyles.centerContainer}>
-        <Text style={productDetailStyles.errorText}>Failed to load product details</Text>
-        <Text style={productDetailStyles.errorSubtext}>Please try again later</Text>
+      <View style={styles.centerContainer}>
+        <Text style={styles.errorText}>Failed to load product details</Text>
+        <Text style={styles.errorSubtext}>Please try again later</Text>
       </View>
     );
   }
@@ -53,133 +46,59 @@ export default function ProductDetail() {
   const product: Product = data.data;
   const currentVariant = product.variants[activeVariantIndex];
 
-  const renderCarouselItem = ({ item }: { item: string }) => (
-    <Image
-      source={{ uri: item }}
-      style={productDetailStyles.carouselImage}
-      resizeMode="contain"
-    />
-  );
+  const handleVariantChange = (index: number) => {
+    setActiveVariantIndex(index);
+    // Reset size selection when changing color variant
+    if (product.variants[index].sizes.length > 0) {
+      setSelectedSize(product.variants[index].sizes[0].size);
+    }
+  };
 
-  const renderSizeOption = (sizeOption: ProductSize) => (
-    <TouchableOpacity
-      key={sizeOption.size}
-      style={[
-        productDetailStyles.sizeButton,
-        selectedSize === sizeOption.size && productDetailStyles.sizeButtonActive
-      ]}
-      onPress={() => setSelectedSize(sizeOption.size)}
-      disabled={sizeOption.stock === 0}
-    >
-      <Text
-        style={[
-          productDetailStyles.sizeText,
-          selectedSize === sizeOption.size && productDetailStyles.sizeTextActive,
-          sizeOption.stock === 0 && productDetailStyles.sizeTextDisabled
-        ]}
-      >
-        {sizeOption.size}
-      </Text>
-    </TouchableOpacity>
-  );
+  const getCurrentPrice = () => {
+    return product.price;
+  };
 
-  const renderColorOption = (variant: ProductVariant, index: number) => (
-    <TouchableOpacity
-      key={variant.color}
-      style={[
-        productDetailStyles.colorButton,
-        { backgroundColor: translateColor(variant.color) }
-      ]}
-      onPress={() => {
-        setActiveVariantIndex(index);
-        // Reset size selection when changing color
-        if (variant.sizes.length > 0) {
-          setSelectedSize(variant.sizes[0].size);
-        }
-      }}
-    >
-      {index === activeVariantIndex && <View style={productDetailStyles.colorButtonSelected} />}
-    </TouchableOpacity>
-  );
+  const getSelectedSizeStock = () => {
+    const selectedSizeData = currentVariant?.sizes.find(
+      (sizeOption) => sizeOption.size === selectedSize
+    );
+    return selectedSizeData?.stock || 0;
+  };
 
   return (
-    <View style={productDetailStyles.container}>
-      <ScrollView style={productDetailStyles.scrollContainer}>
-        {/* Header */}
-        <View style={productDetailStyles.headerContainer}>
-          <PageHeader content={""} />
-          <LikeButton />
-        </View>
+    <View style={styles.container}>
+      {/* Header */}
+      <ProductHeader />
 
-        {/* Image Carousel */}
-        <View style={productDetailStyles.imageContainer}>
-          <Carousel
-            width={width}
-            height={400}
-            autoPlay={false}
-            data={product.images}
-            scrollAnimationDuration={500}
-            renderItem={renderCarouselItem}
-          />
-        </View>
+      <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        {/* Image Gallery */}
+        <ProductImageGallery
+          images={product.images}
+          activeImageIndex={activeImageIndex}
+          onImageChange={setActiveImageIndex}
+        />
 
         {/* Product Info */}
-        <View style={productDetailStyles.contentContainer}>
-          <View style={productDetailStyles.productInfoSection}>
-            {/* Price and Rating */}
-            <View style={productDetailStyles.priceRatingContainer}>
-              <Text style={productDetailStyles.priceText}>
-                {product.price.toLocaleString("vi-VN")}đ
-              </Text>
-              <View style={productDetailStyles.ratingContainer}>
-                <FontAwesome name="star" size={20} color="#fcaf23" />
-                <Text style={[productDetailStyles.ratingText, text.gray_text]}>
-                  {product.rating || 0}
-                </Text>
-              </View>
-            </View>
+        <ProductInfo
+          product={product}
+        />
 
-            {/* Product Name */}
-            <Text style={productDetailStyles.productName}>{product.name}</Text>
-
-            {/* Product Details */}
-            <View style={productDetailStyles.detailsSection}>
-              <Text style={productDetailStyles.sectionTitle}>Chi tiết sản phẩm</Text>
-              <Text style={productDetailStyles.materialText}>
-                Chất liệu: {product.material}
-              </Text>
-              <Text style={productDetailStyles.descriptionText}>
-                {product.description}
-              </Text>
-            </View>
-          </View>
-
-          <View style={productDetailStyles.divider} />
-
-          {/* Size and Color Selection */}
-          <View style={productDetailStyles.selectionSection}>
-            {/* Size Selection */}
-            {currentVariant?.sizes && currentVariant.sizes.length > 0 && (
-              <View style={productDetailStyles.sizeSection}>
-                <Text style={productDetailStyles.sectionTitle}>Select Size</Text>
-                <View style={productDetailStyles.optionsContainer}>
-                  {currentVariant.sizes.map(renderSizeOption)}
-                </View>
-              </View>
-            )}
-
-            {/* Color Selection */}
-            {product.variants && product.variants.length > 0 && (
-              <View style={productDetailStyles.colorSection}>
-                <Text style={productDetailStyles.sectionTitle}>Select Color:</Text>
-                <View style={productDetailStyles.optionsContainer}>
-                  {product.variants.map(renderColorOption)}
-                </View>
-              </View>
-            )}
-          </View>
-        </View>
+        {/* Product Selections */}
+        <ProductSelections
+          product={product}
+          currentVariant={currentVariant}
+          activeVariantIndex={activeVariantIndex}
+          selectedSize={selectedSize}
+          onVariantChange={handleVariantChange}
+          onSizeChange={setSelectedSize}
+        />
       </ScrollView>
+
+      {/* Bottom Bar */}
+      <ProductBottomBar
+        price={getCurrentPrice()}
+        stock={getSelectedSizeStock()}
+      />
     </View>
   );
 }

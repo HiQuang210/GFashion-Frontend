@@ -1,4 +1,4 @@
-import { View, StyleSheet, TouchableOpacity } from "react-native";
+import { StyleSheet, TouchableOpacity } from "react-native";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import layout from "@/styles/layout";
 import { useState } from "react";
@@ -11,8 +11,8 @@ export default function LikeButton() {
     setTouch(!touch);
     Toast.show({
       type: "info",
-      text1: !touch ? "Add to Wishlist success" : "Remove to Wishlist success",
-      position: "bottom",
+      text1: !touch ? "Added to Wishlist" : "Removed from Wishlist",
+      position: "top",
     });
   }
 

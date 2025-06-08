@@ -16,7 +16,6 @@ import { ProductAPI } from "@/api/services/ProductService";
 import { Product } from "@/types/product";
 import { styles } from "@/styles/searchpage";
 import { CATEGORIES, SORT_OPTIONS, PRODUCERS } from "@/types/enum/filter";
-import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
 
 interface FilterState {
   sortBy: string;
@@ -31,46 +30,12 @@ const INITIAL_FILTER_STATE: FilterState = {
 };
 
 export default function SearchPage() {
-  const inputRef = useRef<TextInput>(null);
-  const { autoFocus, selectedCategory: urlSelectedCategory } = useLocalSearchParams(); 
-
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [currentPage, setCurrentPage] = useState(0);
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [filters, setFilters] = useState<FilterState>(INITIAL_FILTER_STATE);
 
-  // Handle auto focus when navigating from homepage
-  useFocusEffect(
-    useCallback(() => {
-      if (autoFocus === "true" && inputRef.current) {
-        const timeout = setTimeout(() => {
-          inputRef.current?.focus();
-        }, 300); // Increased timeout to ensure screen transition is complete
-
-        return () => clearTimeout(timeout);
-      }
-    }, [autoFocus])
-  );
-
-  // Handle category selection from URL params
-  useEffect(() => {
-    if (urlSelectedCategory && typeof urlSelectedCategory === 'string') {
-      setSelectedCategory(urlSelectedCategory);
-    }
-  }, [urlSelectedCategory]);
-
-  // Clear URL params after component mounts to clean up the URL
-  useEffect(() => {
-    if (autoFocus === "true" || urlSelectedCategory) {
-      const timeout = setTimeout(() => {
-        router.replace("/tabs/searchpage");
-      }, 100);
-      
-      return () => clearTimeout(timeout);
-    }
-  }, []);
-  
   const { data: productsData, isLoading, refetch } = useQuery({
     queryKey: ["products", searchQuery, selectedCategory, currentPage, filters],
     queryFn: () => {
@@ -89,12 +54,6 @@ export default function SearchPage() {
       return ProductAPI.searchProducts(params);
     },
   });
-
-  // Handlers
-  const handleSearch = useCallback((text: string) => {
-    setSearchQuery(text);
-    setCurrentPage(0);
-  }, []);
 
   const handleCategoryChange = useCallback((categoryId: string) => {
     setSelectedCategory(categoryId);
@@ -153,7 +112,6 @@ export default function SearchPage() {
       {/* Header with Search Bar */}
       <View style={styles.header}>
         <SearchBar
-          inputRef={inputRef}
           value={searchQuery}
           onChangeText={setSearchQuery}
           onFilterPress={() => setShowFilterModal(true)}

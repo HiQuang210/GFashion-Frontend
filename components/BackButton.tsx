@@ -1,19 +1,23 @@
 import { useRouter } from "expo-router";
-import { TouchableOpacity, View } from "react-native";
-import AntDesign from "@expo/vector-icons/AntDesign";
-
-import layout from "@/styles/layout";
+import { TouchableOpacity } from "react-native";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 
 export default function BackButton() {
   const router = useRouter();
+
   return (
     <TouchableOpacity
-      style={[layout.container_rounded_small, { marginBottom: 20 }]}
+      style={{
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: "#F5F5F5",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
       onPress={() => router.back()}
     >
-      <View style={[layout.flex_row_center, { width: 40, height: 40 }]}>
-        <AntDesign name="arrowleft" size={22} color={"#704F38"} />
-      </View>
+      <FontAwesome name="arrow-left" size={20} color="#000000" />
     </TouchableOpacity>
   );
 }

@@ -2,7 +2,7 @@ import { Image, Text, View, StyleSheet, TouchableOpacity } from "react-native";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { router } from "expo-router";
 import text from "@/styles/text";
-import LikeButton from "./LikeButton";
+import LikeButton from "./FavoriteButton";
 import { Product } from "@/types/product";
 
 interface ProductItemProps {
