@@ -5,18 +5,26 @@ import NewSection from "@/components/NewSection";
 import SearchBar from "@/components/SearchBar";
 import Slider from "@/components/Slider";
 import { SafeAreaView, StyleSheet, ScrollView } from "react-native";
-import { useRouter } from "expo-router";
+import { useTabNavigation } from "@/contexts/TabNavigation";
 
 export default function HomePage() {
-  const router = useRouter();
+  const { navigateToTab } = useTabNavigation();
+
+  const handleSearchPress = () => {
+    navigateToTab("search");
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 50 }} style={{ marginHorizontal: 20 }} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 50 }} 
+        style={{ marginHorizontal: 20 }} 
+        showsVerticalScrollIndicator={false}
+      >
         <HomeHeader />
         <SearchBar
           readOnly
-          onPress={() => router.push({ pathname: "/tabs/searchpage", params: { autoFocus: "true" } })}
+          onPress={handleSearchPress}
         />
         <Slider />
         <Category />
@@ -33,4 +41,3 @@ const styles = StyleSheet.create({
     backgroundColor: "#f9f9f9",
   },
 });
-

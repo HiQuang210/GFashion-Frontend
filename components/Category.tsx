@@ -1,8 +1,11 @@
 import { View, StyleSheet, ScrollView } from "react-native";
 import SectionHeader from "./SectionHeader";
 import CategoryItem from "./CategoryItem";
+import { useTabNavigation } from "@/contexts/TabNavigation";
 
 export default function Category() {
+  const { navigateToTab } = useTabNavigation();
+  
   const categories = [
     "tshirt",
     "pant", 
@@ -14,6 +17,10 @@ export default function Category() {
     "hat",
     "other"
   ];
+
+  const handleCategoryPress = (category: string) => {
+    navigateToTab("search");
+  };
 
   return (
     <View style={{ marginBottom: 30 }}>
@@ -29,7 +36,10 @@ export default function Category() {
       >
         {categories.map((category, index) => (
           <View key={index} style={styles.categoryWrapper}>
-            <CategoryItem content={category} />
+            <CategoryItem 
+              content={category} 
+              onPress={() => handleCategoryPress(category)}
+            />
           </View>
         ))}
       </ScrollView>

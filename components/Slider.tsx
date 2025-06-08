@@ -1,16 +1,20 @@
 import layout from "@/styles/layout";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Image,
   View,
   StyleSheet,
   Dimensions,
+  Animated,
 } from "react-native";
 
 const { width: screenWidth } = Dimensions.get("window");
 
 export default function Slider() {
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(0); // chỉ để vẽ dot
+  const currentIndex = useRef(0);
+  const translateX = useRef(new Animated.Value(0)).current;
+
   const images = [
     require("@/assets/images/Fashion-Bug_Sliders_Jul_2024-1_compressed.jpg"),
     require("@/assets/images/flat-design-fashion-collection-facebook-template_23-2149921756.avif"),
@@ -21,20 +25,44 @@ export default function Slider() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const nextIndex = (index + 1) % images.length;
-      setIndex(nextIndex);
+      let nextIndex = (currentIndex.current + 1) % images.length;
+      slideTo(nextIndex);
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [index]);
+  }, []);
+
+  const slideTo = (nextIndex: number) => {
+    Animated.timing(translateX, {
+      toValue: -nextIndex * (screenWidth - 40),
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+
+    currentIndex.current = nextIndex;
+    setIndex(nextIndex);
+  };
 
   return (
     <View style={{ marginBottom: 30, alignItems: "center" }}>
-      <Image
-        source={images[index]}
-        resizeMode="stretch"
-        style={[styles.img, { width: screenWidth - 40 }]} 
-      />
+      <View style={{ overflow: "hidden", width: screenWidth - 40 }}>
+        <Animated.View
+          style={{
+            flexDirection: "row",
+            transform: [{ translateX }],
+          }}
+        >
+          {images.map((img, i) => (
+            <Image
+              key={i}
+              source={img}
+              resizeMode="stretch"
+              style={[styles.img, { width: screenWidth - 40 }]}
+            />
+          ))}
+        </Animated.View>
+      </View>
+
       <View style={[layout.flex_row_center, layout.gap_xs]}>
         {images.map((_, i) => (
           <View
@@ -49,7 +77,7 @@ export default function Slider() {
 
 const styles = StyleSheet.create({
   img: {
-    height: 160,
+    height: 180,
     borderRadius: 10,
     marginBottom: 10,
   },

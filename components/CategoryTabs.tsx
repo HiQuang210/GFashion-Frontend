@@ -1,24 +1,70 @@
 import React from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Image, ImageSourcePropType } from "react-native";
 import Feather from "@expo/vector-icons/Feather";
-
-interface Category {
-  id: string;
-  name: string;
-  icon: string;
-}
-
-interface CategoryTabsProps {
-  categories: Category[];
-  selectedCategory: string;
-  onCategoryChange: (categoryId: string) => void;
-}
+import { Ionicons } from "@expo/vector-icons";
+import { Category, CategoryTabsProps } from "@/types/category";
 
 export default function CategoryTabs({ 
   categories, 
   selectedCategory, 
   onCategoryChange 
 }: CategoryTabsProps) {
+  const imageMap: { [key: string]: ImageSourcePropType } = {
+    tshirt: require("@/assets/images/tshirt.png"),
+    pant: require("@/assets/images/pant.png"),
+    dress: require("@/assets/images/dress.png"),
+    jacket: require("@/assets/images/jacket.png"),
+    shoes: require("@/assets/images/shoes.png"),
+    accessories: require("@/assets/images/accessories.png"),
+    bags: require("@/assets/images/bags.png"),
+    hat: require("@/assets/images/hat.png"),
+  };
+
+  const renderIcon = (category: Category, isSelected: boolean) => {
+    const iconColor = isSelected ? "#fff" : "#704F38";
+    const iconSize = 16;
+
+    switch (category.iconLibrary) {
+      case "feather":
+        return (
+          <Feather
+            name={category.icon as any}
+            size={iconSize}
+            color={iconColor}
+          />
+        );
+      case "ionicons":
+        return (
+          <Ionicons
+            name={category.icon as any}
+            size={iconSize}
+            color={iconColor}
+          />
+        );
+      case "image":
+        return (
+          <Image
+            source={imageMap[category.icon]}
+            style={[
+              styles.categoryIcon,
+              {
+                tintColor: iconColor,
+              }
+            ]}
+            resizeMode="contain"
+          />
+        );
+      default:
+        return (
+          <Feather
+            name="help-circle"
+            size={iconSize}
+            color={iconColor}
+          />
+        );
+    }
+  };
+
   const renderCategoryTab = (category: Category) => (
     <TouchableOpacity
       key={category.id}
@@ -28,11 +74,7 @@ export default function CategoryTabs({
       ]}
       onPress={() => onCategoryChange(category.id)}
     >
-      <Feather
-        name={category.icon as any}
-        size={16}
-        color={selectedCategory === category.id ? "#fff" : "#704F38"}
-      />
+      {renderIcon(category, selectedCategory === category.id)}
       <Text
         style={[
           styles.categoryTabText,
@@ -88,5 +130,9 @@ const styles = StyleSheet.create({
   },
   categoryTabTextActive: {
     color: "#fff",
+  },
+  categoryIcon: {
+    width: 16,
+    height: 16,
   },
 });

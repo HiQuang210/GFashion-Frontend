@@ -1,14 +1,16 @@
-export const CATEGORIES = [
-  { id: "all", name: "All", icon: "grid" },
-  { id: "tshirt", name: "T-Shirt", icon: "user" },
-  { id: "pant", name: "Pants", icon: "user" },
-  { id: "jacket", name: "Jacket", icon: "user" },
-  { id: "dress", name: "Dress", icon: "user" },
-  { id: "shoes", name: "Shoes", icon: "user" },
-  { id: "accessories", name: "Accessories", icon: "watch" },
-  { id: "bags", name: "Bags", icon: "shopping-bag" },
-  { id: "hat", name: "Hat", icon: "user" },
-  { id: "other", name: "Other", icon: "more-horizontal" },
+import type { Category } from "@/types/category"; 
+
+export const CATEGORIES: Category[] = [
+  { id: "all", name: "All", icon: "grid", iconLibrary: "feather" },
+  { id: "tshirt", name: "T-Shirt", icon: "tshirt", iconLibrary: "image" },
+  { id: "pant", name: "Pants", icon: "pant", iconLibrary: "image" },
+  { id: "jacket", name: "Jacket", icon: "jacket", iconLibrary: "image" },
+  { id: "dress", name: "Dress", icon: "dress", iconLibrary: "image" },
+  { id: "shoes", name: "Shoes", icon: "shoes", iconLibrary: "image" },
+  { id: "accessories", name: "Accessories", icon: "accessories", iconLibrary: "image" },
+  { id: "bags", name: "Bags", icon: "bags", iconLibrary: "image" },
+  { id: "hat", name: "Hat", icon: "hat", iconLibrary: "image" },
+  { id: "other", name: "Other", icon: "layers", iconLibrary: "feather" },
 ];
 
 export const SORT_OPTIONS = [

@@ -6,13 +6,16 @@ import {
   View,
   StyleSheet,
   ImageSourcePropType,
+  TouchableOpacity,
 } from "react-native";
+import Feather from "@expo/vector-icons/Feather";
 
 type InputProps = {
   content: string;
+  onPress?: () => void;
 };
 
-export default function CategoryItem({ content }: InputProps) {
+export default function CategoryItem({ content, onPress }: InputProps) {
   const imageMap: { [key: string]: ImageSourcePropType } = {
     tshirt: require("@/assets/images/tshirt.png"),
     pant: require("@/assets/images/pant.png"),
@@ -23,18 +26,45 @@ export default function CategoryItem({ content }: InputProps) {
     bags: require("@/assets/images/bags.png"),
     hat: require("@/assets/images/hat.png"),
   };
-  return (
+
+  const renderIcon = () => {
+    if (content === "other") {
+      return (
+        <Feather
+          name="layers"
+          size={25}
+          color="#704F38"
+        />
+      );
+    }
+    
+    return (
+      <Image
+        source={imageMap[content]}
+        resizeMode="stretch"
+        style={styles.img}
+      />
+    );
+  };
+
+  const CategoryContent = () => (
     <View style={layout.flex_col}>
       <View style={[styles.img_container, layout.flex_col_center]}>
-        <Image
-          source={imageMap[content]}
-          resizeMode="stretch"
-          style={styles.img}
-        />
+        {renderIcon()}
       </View>
       <Text style={styles.text}>{capitalize(content)}</Text>
     </View>
   );
+
+  if (onPress) {
+    return (
+      <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+        <CategoryContent />
+      </TouchableOpacity>
+    );
+  }
+
+  return <CategoryContent />;
 }
 
 const styles = StyleSheet.create({

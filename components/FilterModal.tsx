@@ -6,6 +6,8 @@ import {
   Modal,
   ScrollView,
   TextInput,
+  Platform,
+  Dimensions,
 } from "react-native";
 import Feather from "@expo/vector-icons/Feather";
 import { filterModalStyles } from "@/styles/filtermodal";
@@ -83,9 +85,17 @@ export default function FilterModal({
       visible={visible}
       animationType="slide"
       transparent={true}
+      presentationStyle="overFullScreen"
+      statusBarTranslucent={true} // Important for Android
     >
-      <View style={filterModalStyles.modalOverlay}>
-        <View style={filterModalStyles.modalContent}>
+      <View style={[filterModalStyles.modalOverlay, { paddingTop: Platform.OS === 'ios' ? 0 : 20 }]}>
+        <View style={[
+          filterModalStyles.modalContent,
+          Platform.OS === 'ios' && {
+            paddingBottom: 10, // Account for iPhone home indicator
+          }
+        ]}>
+          {/* Fixed Header */}
           <View style={filterModalStyles.modalHeader}>
             <Text style={filterModalStyles.modalTitle}>Filter Products</Text>
             <TouchableOpacity onPress={onClose}>
@@ -93,7 +103,16 @@ export default function FilterModal({
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={filterModalStyles.modalBody}>
+          {/* Scrollable Content */}
+          <ScrollView 
+            style={filterModalStyles.modalBody}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ 
+              paddingBottom: Platform.OS === 'ios' ? 40 : 20,
+              flexGrow: 1 
+            }}
+            bounces={false} // Disable bouncing on iOS
+          >
             {/* Sort By */}
             <View style={filterModalStyles.filterSection}>
               <Text style={filterModalStyles.filterSectionTitle}>Sort By</Text>
@@ -151,6 +170,7 @@ export default function FilterModal({
             </View>
           </ScrollView>
 
+          {/* Fixed Footer */}
           <View style={filterModalStyles.modalFooter}>
             <TouchableOpacity
               style={filterModalStyles.clearButton}

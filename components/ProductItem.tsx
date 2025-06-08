@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
   },
   img: {
     width: "100%",
-    height: 160,
+    height: 180,
     borderRadius: 12,
   },
   favoriteButton: {

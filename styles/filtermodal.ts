@@ -1,4 +1,6 @@
-import { StyleSheet } from "react-native";
+import { Dimensions, StyleSheet } from "react-native";
+
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export const filterModalStyles = StyleSheet.create({
   modalOverlay: {
@@ -10,7 +12,8 @@ export const filterModalStyles = StyleSheet.create({
     backgroundColor: "#fff",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    maxHeight: "80%",
+    height: SCREEN_HEIGHT * 0.8, 
+    flexDirection: "column", 
   },
   modalHeader: {
     flexDirection: "row",
@@ -19,6 +22,7 @@ export const filterModalStyles = StyleSheet.create({
     padding: 20,
     borderBottomWidth: 1,
     borderBottomColor: "#F0F0F0",
+    flexShrink: 0, 
   },
   modalTitle: {
     fontSize: 18,
@@ -26,8 +30,9 @@ export const filterModalStyles = StyleSheet.create({
     color: "#333",
   },
   modalBody: {
-    flex: 1,
-    padding: 20,
+    flex: 1, // Take remaining space
+    paddingHorizontal: 20,
+    paddingTop: 10, // Reduced top padding
   },
   filterSection: {
     marginBottom: 24,
@@ -74,6 +79,7 @@ export const filterModalStyles = StyleSheet.create({
     gap: 12,
     borderTopWidth: 1,
     borderTopColor: "#F0F0F0",
+    flexShrink: 0, 
   },
   clearButton: {
     flex: 1,

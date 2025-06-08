@@ -1,7 +1,7 @@
+import { useTabNavigation } from "@/contexts/TabNavigation";
 import layout from "@/styles/layout";
 import link from "@/styles/link";
-import { Link } from "expo-router";
-import { Text, View, StyleSheet } from "react-native";
+import { Text, View, StyleSheet, TouchableOpacity } from "react-native";
 
 type InputProps = {
   content: string;
@@ -9,6 +9,12 @@ type InputProps = {
 };
 
 export default function SectionHeader({ content }: InputProps) {
+  const { navigateToTab } = useTabNavigation();
+
+  const handleSearchPress = () => {
+    navigateToTab("search");
+  };
+  
   return (
     <View
       style={[
@@ -17,9 +23,9 @@ export default function SectionHeader({ content }: InputProps) {
       ]}
     >
       <Text style={styles.section_label}>{content}</Text>
-      <Link href={{ pathname: `/tabs/searchpage` }} style={link.sub_link}>
-        See All
-      </Link>
+      <TouchableOpacity onPress={handleSearchPress}>
+        <Text style={link.sub_link}>See All</Text>
+      </TouchableOpacity>
     </View>
   );
 }

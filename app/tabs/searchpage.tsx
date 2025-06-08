@@ -6,7 +6,6 @@ import {
   FlatList,
   TextInput,
 } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import SearchBar from "@/components/SearchBar";
 import ProductItem from "@/components/ProductItem";
@@ -17,7 +16,7 @@ import { ProductAPI } from "@/api/services/ProductService";
 import { Product } from "@/types/product";
 import { styles } from "@/styles/searchpage";
 import { CATEGORIES, SORT_OPTIONS, PRODUCERS } from "@/types/enum/filter";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
 
 interface FilterState {
   sortBy: string;
@@ -33,7 +32,7 @@ const INITIAL_FILTER_STATE: FilterState = {
 
 export default function SearchPage() {
   const inputRef = useRef<TextInput>(null);
-  const { autoFocus } = useLocalSearchParams(); 
+  const { autoFocus, selectedCategory: urlSelectedCategory } = useLocalSearchParams(); 
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -41,16 +40,36 @@ export default function SearchPage() {
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [filters, setFilters] = useState<FilterState>(INITIAL_FILTER_STATE);
 
+  // Handle auto focus when navigating from homepage
   useFocusEffect(
     useCallback(() => {
       if (autoFocus === "true" && inputRef.current) {
         const timeout = setTimeout(() => {
           inputRef.current?.focus();
-        }, 150);
-        return () => clearTimeout(timeout); // cleanup timeout
+        }, 300); // Increased timeout to ensure screen transition is complete
+
+        return () => clearTimeout(timeout);
       }
     }, [autoFocus])
   );
+
+  // Handle category selection from URL params
+  useEffect(() => {
+    if (urlSelectedCategory && typeof urlSelectedCategory === 'string') {
+      setSelectedCategory(urlSelectedCategory);
+    }
+  }, [urlSelectedCategory]);
+
+  // Clear URL params after component mounts to clean up the URL
+  useEffect(() => {
+    if (autoFocus === "true" || urlSelectedCategory) {
+      const timeout = setTimeout(() => {
+        router.replace("/tabs/searchpage");
+      }, 100);
+      
+      return () => clearTimeout(timeout);
+    }
+  }, []);
   
   const { data: productsData, isLoading, refetch } = useQuery({
     queryKey: ["products", searchQuery, selectedCategory, currentPage, filters],
