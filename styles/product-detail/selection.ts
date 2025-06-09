@@ -31,7 +31,6 @@ export const styles = StyleSheet.create({
   },
   colorOptionContainer: {
     alignItems: 'center',
-    marginBottom: 8,
   },
   colorButton: {
     width: 36,
@@ -41,7 +40,6 @@ export const styles = StyleSheet.create({
     borderColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 4,
   },
   colorButtonSelected: {
     borderColor: '#704F38',
@@ -81,7 +79,6 @@ export const styles = StyleSheet.create({
   },
   sizeOptionContainer: {
     alignItems: 'center',
-    marginBottom: 8,
   },
   sizeButton: {
     width: 48,

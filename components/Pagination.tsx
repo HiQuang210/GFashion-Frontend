@@ -4,12 +4,14 @@ import Feather from "@expo/vector-icons/Feather";
 
 interface PaginationProps {
   currentPage: number;
+  totalPages: number;
   onPageChange: (page: number) => void;
   hasNextPage?: boolean;
 }
 
 export default function Pagination({ 
   currentPage, 
+  totalPages,
   onPageChange, 
   hasNextPage = true 
 }: PaginationProps) {
@@ -20,8 +22,14 @@ export default function Pagination({
   };
 
   const handleNextPage = () => {
-    onPageChange(currentPage + 1);
+    if (hasNextPage && currentPage < totalPages - 1) {
+      onPageChange(currentPage + 1);
+    }
   };
+
+  if (totalPages <= 1) {
+    return null;
+  }
 
   return (
     <View style={styles.paginationContainer}>
@@ -40,20 +48,22 @@ export default function Pagination({
         />
       </TouchableOpacity>
       
-      <Text style={styles.paginationText}>Page {currentPage + 1}</Text>
+      <Text style={styles.paginationText}>
+        Page {currentPage + 1} of {totalPages}
+      </Text>
       
       <TouchableOpacity
         style={[
           styles.paginationButton,
-          !hasNextPage && styles.paginationButtonDisabled
+          (!hasNextPage || currentPage >= totalPages - 1) && styles.paginationButtonDisabled
         ]}
         onPress={handleNextPage}
-        disabled={!hasNextPage}
+        disabled={!hasNextPage || currentPage >= totalPages - 1}
       >
         <Feather 
           name="chevron-right" 
           size={20} 
-          color={!hasNextPage ? "#ccc" : "#704F38"} 
+          color={(!hasNextPage || currentPage >= totalPages - 1) ? "#ccc" : "#704F38"} 
         />
       </TouchableOpacity>
     </View>

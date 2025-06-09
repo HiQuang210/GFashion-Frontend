@@ -25,5 +25,6 @@ export const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 12,
   },
 });

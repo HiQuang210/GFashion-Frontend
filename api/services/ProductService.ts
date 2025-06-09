@@ -16,7 +16,7 @@ export class ProductAPI {
     try {
       const {
         limitItem = 8,
-        page = 0,
+        page = 1, // Backend uses 1-based pagination
         sort,
         filter,
         searchQuery,
@@ -35,6 +35,56 @@ export class ProductAPI {
       return response.data;
     } catch (error: any) {
       console.error("Get all products error:", error.response?.data || error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * Search products with advanced filters - Updated to use getAllProducts
+   */
+  static async searchProducts(searchParams: ProductSearchParams): Promise<GetProductsResponse> {
+    try {
+      const {
+        query,
+        type,
+        producer,
+        minPrice,
+        maxPrice,
+        rating,
+        sortBy,
+        sortOrder = 'asc',
+        page = 0, // Frontend uses 0-based
+        limit = 8,
+      } = searchParams;
+
+      // Convert sortBy to backend format
+      let backendSort = sortBy;
+      if (sortBy === 'price-low') {
+        backendSort = 'price-asc';
+      } else if (sortBy === 'price-high') {
+        backendSort = 'price-desc';
+      }
+
+      // Build filter string based on your backend's filter format
+      let filterString = '';
+      if (type && type !== 'all') {
+        filterString = type;
+      }
+      
+      // Note: Your current backend doesn't seem to support multiple filters or price range
+      // You might need to update your backend to handle producer, price range filters
+
+      const params: GetProductsQuery = {
+        page: page + 1, // Convert to 1-based for backend
+        limitItem: limit,
+        sort: backendSort,
+        filter: filterString || undefined,
+        searchQuery: query || undefined,
+      };
+
+      return await ProductAPI.getAllProducts(params);
+    } catch (error: any) {
+      console.error("Search products error:", error.response?.data || error.message);
       throw error;
     }
   }
@@ -78,55 +128,6 @@ export class ProductAPI {
   }
 
   /**
-   * Search products with advanced filters
-   */
-  static async searchProducts(searchParams: ProductSearchParams): Promise<GetProductsResponse> {
-    try {
-      const {
-        query,
-        type,
-        producer,
-        minPrice,
-        maxPrice,
-        rating,
-        sortBy,
-        sortOrder = 'asc',
-        page = 0,
-        limit = 8,
-      } = searchParams;
-
-      const queryParams = new URLSearchParams();
-      
-      if (query) queryParams.append('searchQuery', query);
-      if (type) queryParams.append('filter', `type,${type}`);
-      if (producer) queryParams.append('filter', `producer,${producer}`);
-      if (sortBy) queryParams.append('sort', `${sortBy},${sortOrder}`);
-      if (page) queryParams.append('page', page.toString());
-      if (limit) queryParams.append('limitItem', limit.toString());
-
-      // Handle price range filter
-      if (minPrice !== undefined || maxPrice !== undefined) {
-        let priceFilter = 'price';
-        if (minPrice !== undefined) priceFilter += `,gte,${minPrice}`;
-        if (maxPrice !== undefined) priceFilter += `,lte,${maxPrice}`;
-        queryParams.append('filter', priceFilter);
-      }
-
-      // Handle rating filter
-      if (rating !== undefined) {
-        queryParams.append('filter', `rating,gte,${rating}`);
-      }
-
-      const response = await axiosClient.get(`product/get-all?${queryParams.toString()}`);
-      console.log("Search products successful:", response.data);
-      return response.data;
-    } catch (error: any) {
-      console.error("Search products error:", error.response?.data || error.message);
-      throw error;
-    }
-  }
-
-  /**
    * Get products by type/category
    */
   static async getProductsByType(
@@ -136,8 +137,8 @@ export class ProductAPI {
   ): Promise<GetProductsResponse> {
     try {
       return await ProductAPI.getAllProducts({
-        filter: `type,${type}`,
-        page,
+        filter: type,
+        page: page + 1, // Convert to 1-based
         limitItem: limit,
       });
     } catch (error: any) {
@@ -155,9 +156,10 @@ export class ProductAPI {
     limit: number = 8
   ): Promise<GetProductsResponse> {
     try {
+      // Note: Your backend might not support producer filter yet
       return await ProductAPI.getAllProducts({
-        filter: `producer,${producer}`,
-        page,
+        filter: producer, // You might need to adjust this format
+        page: page + 1, // Convert to 1-based
         limitItem: limit,
       });
     } catch (error: any) {
@@ -174,7 +176,7 @@ export class ProductAPI {
       return await ProductAPI.getAllProducts({
         sort: 'best-seller',
         limitItem: limit,
-        page: 0,
+        page: 1,
       });
     } catch (error: any) {
       console.error("Get featured products error:", error.response?.data || error.message);
@@ -190,7 +192,7 @@ export class ProductAPI {
       return await ProductAPI.getAllProducts({
         sort: 'newest',
         limitItem: limit,
-        page: 0,
+        page: 1,
       });
     } catch (error: any) {
       console.error("Get newest products error:", error.response?.data || error.message);
@@ -206,7 +208,7 @@ export class ProductAPI {
       return await ProductAPI.getAllProducts({
         sort: 'highest-rating',
         limitItem: limit,
-        page: 0,
+        page: 1,
       });
     } catch (error: any) {
       console.error("Get top rated products error:", error.response?.data || error.message);

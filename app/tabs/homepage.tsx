@@ -6,6 +6,7 @@ import SearchBar from "@/components/SearchBar";
 import Slider from "@/components/Slider";
 import { SafeAreaView, StyleSheet, ScrollView } from "react-native";
 import { useTabNavigation } from "@/contexts/TabNavigation";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function HomePage() {
   const { navigateToTab } = useTabNavigation();
@@ -15,23 +16,25 @@ export default function HomePage() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView 
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: 50 }} 
-        style={{ marginHorizontal: 20 }} 
-        showsVerticalScrollIndicator={false}
-      >
-        <HomeHeader />
-        <SearchBar
-          readOnly
-          onPress={handleSearchPress}
-        />
-        <Slider />
-        <Category />
-        <NewSection />
-        <BestSeller />
-      </ScrollView>
-    </SafeAreaView>
+    <ProtectedRoute>
+      <SafeAreaView style={styles.container}>
+        <ScrollView 
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: 50 }} 
+          style={{ marginHorizontal: 20 }} 
+          showsVerticalScrollIndicator={false}
+        >
+          <HomeHeader />
+          <SearchBar
+            readOnly
+            onPress={handleSearchPress}
+          />
+          <Slider />
+          <Category />
+          <NewSection />
+          <BestSeller />
+        </ScrollView>
+      </SafeAreaView>
+    </ProtectedRoute>
   );
 }
 

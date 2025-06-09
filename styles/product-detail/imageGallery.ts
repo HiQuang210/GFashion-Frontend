@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   mainImageContainer: {
-    height: 300,
+    height: 400,
     backgroundColor: '#F5F5F5',
   },
   mainImage: {

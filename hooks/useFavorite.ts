@@ -29,20 +29,38 @@ export const useFavorites = () => {
       });
     },
     onMutate: async ({ action, productId }) => {
+      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: ["userFavorites", userInfo?._id] });
-      const previousFavorites = queryClient.getQueryData<string[]>(["userFavorites", userInfo?._id]) || [];
+      await queryClient.cancelQueries({ queryKey: ["favoriteProducts", userInfo?._id] });
 
+      // Snapshot the previous value
+      const previousFavorites = queryClient.getQueryData<string[]>(["userFavorites", userInfo?._id]) || [];
+      const previousFavoriteProducts = queryClient.getQueryData(["favoriteProducts", userInfo?._id]) || [];
+
+      // Optimistically update favorites
       const newFavorites = action === "add" 
         ? [...previousFavorites, productId]
         : previousFavorites.filter(id => id !== productId);
 
       queryClient.setQueryData(["userFavorites", userInfo?._id], newFavorites);
 
-      return { previousFavorites };
+      // Optimistically update favorite products list (remove item if removing from favorites)
+      if (action === "remove") {
+        const updatedFavoriteProducts = Array.isArray(previousFavoriteProducts) 
+          ? previousFavoriteProducts.filter((product: any) => product._id !== productId)
+          : [];
+        queryClient.setQueryData(["favoriteProducts", userInfo?._id], updatedFavoriteProducts);
+      }
+
+      return { previousFavorites, previousFavoriteProducts };
     },
     onError: (err, { productId }, context) => {
+      // Rollback on error
       if (context?.previousFavorites) {
         queryClient.setQueryData(["userFavorites", userInfo?._id], context.previousFavorites);
+      }
+      if (context?.previousFavoriteProducts) {
+        queryClient.setQueryData(["favoriteProducts", userInfo?._id], context.previousFavoriteProducts);
       }
       
       const errorMessage = (err as any)?.response?.data?.message || "Failed to update wishlist";
@@ -55,6 +73,8 @@ export const useFavorites = () => {
     onSuccess: (response, { action, productId }) => {
       if (response.status === "OK") {
         const currentFavorites = queryClient.getQueryData<string[]>(["userFavorites", userInfo?._id]) || [];
+        
+        // Update user info in auth context
         if (userInfo) {
           updateUserInfo({
             ...userInfo,
@@ -67,10 +87,17 @@ export const useFavorites = () => {
           text1: action === "add" ? "Added to Wishlist" : "Removed from Wishlist",
           position: "top",
         });
+
+        // Refetch favorite products to get fresh data from server
+        if (action === "add") {
+          queryClient.invalidateQueries({ queryKey: ["favoriteProducts", userInfo?._id] });
+        }
       }
     },
     onSettled: () => {
+      // Always refetch to ensure data consistency
       queryClient.invalidateQueries({ queryKey: ["userFavorites", userInfo?._id] });
+      queryClient.invalidateQueries({ queryKey: ["favoriteProducts", userInfo?._id] });
     },
   });
 
@@ -83,10 +110,24 @@ export const useFavorites = () => {
 
   const isFavorite = (productId: string) => favorites.includes(productId);
 
+  const addToFavorites = (productId: string) => {
+    if (!favorites.includes(productId)) {
+      favoriteMutation.mutate({ action: "add", productId });
+    }
+  };
+
+  const removeFromFavorites = (productId: string) => {
+    if (favorites.includes(productId)) {
+      favoriteMutation.mutate({ action: "remove", productId });
+    }
+  };
+
   return {
     favorites,
     isFavorite,
     toggleFavorite,
+    addToFavorites,
+    removeFromFavorites,
     isLoading: favoriteMutation.isPending,
   };
 };

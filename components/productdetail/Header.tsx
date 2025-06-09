@@ -4,7 +4,12 @@ import BackButton from "@/components/BackButton";
 import { styles } from "@/styles/product-detail/header";
 import FavoriteButton from "@/components/FavoriteButton";
 
-export default function ProductHeader() {
+interface ProductHeaderProps {
+  productId?: string;
+  onFavoriteChange?: (isFavorite: boolean) => void;
+}
+
+export default function ProductHeader({ productId, onFavoriteChange }: ProductHeaderProps) {
   return (
     <View style={styles.header}>
       {/* Back Button */}
@@ -15,7 +20,12 @@ export default function ProductHeader() {
 
       {/* Favorite Button */}
       <View style={styles.favoriteButtonContainer}>
-        <FavoriteButton productId={""} />
+        {productId && (
+          <FavoriteButton 
+            productId={productId} 
+            onFavoriteChange={onFavoriteChange}
+          />
+        )}
       </View>
     </View>
   );

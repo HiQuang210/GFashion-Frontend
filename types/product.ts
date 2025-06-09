@@ -40,6 +40,7 @@ export interface GetProductsResponse extends ApiResponse {
   data: Product[];
   total: number;
   totalPage: number;
+  totalProd: number;
   currentPage: number;
   limitItem: number;
 }

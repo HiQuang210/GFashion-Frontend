@@ -69,4 +69,8 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 4,
   },
+  descriptionLabel: {
+    marginTop: 8,
+    marginBottom: 4,
+  },
 });

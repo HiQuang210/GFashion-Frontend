@@ -32,8 +32,6 @@ export default function FavoriteButton({
     if (isLoading) return;
 
     toggleFavorite(productId);
-    
-    // Call the callback with the new state
     onFavoriteChange?.(!currentIsFavorite);
   }
 
@@ -47,6 +45,7 @@ export default function FavoriteButton({
         name={currentIsFavorite ? "heart" : "hearto"}
         color={"#704F38"}
         size={20}
+        style={{ marginTop: 4 }}
       />
     </TouchableOpacity>
   );

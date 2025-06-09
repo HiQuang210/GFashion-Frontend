@@ -1,13 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LoginResponse } from "@/api/services/UserService";
-import { UserInfo } from "@/types/user"; // Import UserInfo from types instead
+import { UserInfo } from "@/types/user"; 
 import { useState, useEffect } from "react";
 
 export function useAuth() {
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load user data on hook initialization
   useEffect(() => {
     loadUserData();
   }, []);

@@ -15,7 +15,6 @@ import { styles } from "@/styles/productDetail";
 export default function ProductDetail() {
   const { id } = useLocalSearchParams();
   
-  // Handle the id parameter properly - convert array to string if needed
   const productId = Array.isArray(id) ? id[0] : id;
   
   const { data, isLoading, isError } = useProductDetail(productId);
@@ -23,7 +22,6 @@ export default function ProductDetail() {
   const [selectedSize, setSelectedSize] = useState("S");
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
-  // Loading state
   if (isLoading) {
     return (
       <View style={styles.centerContainer}>
@@ -33,7 +31,6 @@ export default function ProductDetail() {
     );
   }
 
-  // Error state
   if (isError || !data?.data) {
     return (
       <View style={styles.centerContainer}>
@@ -48,7 +45,6 @@ export default function ProductDetail() {
 
   const handleVariantChange = (index: number) => {
     setActiveVariantIndex(index);
-    // Reset size selection when changing color variant
     if (product.variants[index].sizes.length > 0) {
       setSelectedSize(product.variants[index].sizes[0].size);
     }
@@ -68,7 +64,9 @@ export default function ProductDetail() {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <ProductHeader />
+      <ProductHeader 
+        productId={product._id}
+      />
 
       <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         {/* Image Gallery */}

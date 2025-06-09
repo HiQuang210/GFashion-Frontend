@@ -4,7 +4,6 @@ import {
   Text,
   SafeAreaView,
   FlatList,
-  TextInput,
 } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import SearchBar from "@/components/SearchBar";
@@ -29,6 +28,8 @@ const INITIAL_FILTER_STATE: FilterState = {
   selectedProducer: "",
 };
 
+const PRODUCTS_PER_PAGE = 8;
+
 export default function SearchPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -40,20 +41,24 @@ export default function SearchPage() {
     queryKey: ["products", searchQuery, selectedCategory, currentPage, filters],
     queryFn: () => {
       const params: any = {
-        page: currentPage,
-        limit: 10,
-        sortBy: filters.sortBy,
-        sortOrder: filters.sortBy.includes("price-high") ? "desc" : "asc",
+        page: currentPage + 1,
+        limitItem: PRODUCTS_PER_PAGE,
+        sort: filters.sortBy,
       };
-      if (searchQuery) params.query = searchQuery;
-      if (selectedCategory !== "all") params.type = selectedCategory;
-      if (filters.selectedProducer) params.producer = filters.selectedProducer;
-      if (filters.priceRange.min) params.minPrice = parseInt(filters.priceRange.min);
-      if (filters.priceRange.max) params.maxPrice = parseInt(filters.priceRange.max);
+      
+      if (searchQuery) params.searchQuery = searchQuery;
+      if (selectedCategory !== "all") params.filter = selectedCategory;
+      if (filters.selectedProducer) {
+        params.filter = filters.selectedProducer;
+      }
 
-      return ProductAPI.searchProducts(params);
+      return ProductAPI.getAllProducts(params);
     },
   });
+
+  const currentProducts = productsData?.data || [];
+  const totalPages = productsData?.totalPage || 1;
+  const hasNextPage = currentPage < totalPages - 1;
 
   const handleCategoryChange = useCallback((categoryId: string) => {
     setSelectedCategory(categoryId);
@@ -73,10 +78,11 @@ export default function SearchPage() {
   }, []);
 
   const handlePageChange = useCallback((page: number) => {
-    setCurrentPage(page);
-  }, []);
+    if (page >= 0 && page < totalPages) {
+      setCurrentPage(page);
+    }
+  }, [totalPages]);
 
-  // Render functions
   const renderProductItem = ({ item }: { item: Product }) => (
     <View style={styles.productItemContainer}>
       <ProductItem data={item} />
@@ -96,10 +102,12 @@ export default function SearchPage() {
   );
 
   const renderFooter = () => {
-    if (productsData?.data && productsData.data.length > 0) {
+    if (totalPages > 1) {
       return (
         <Pagination
           currentPage={currentPage}
+          totalPages={totalPages}
+          hasNextPage={hasNextPage}
           onPageChange={handlePageChange}
         />
       );
@@ -131,18 +139,12 @@ export default function SearchPage() {
           renderLoadingState()
         ) : (
           <FlatList
-            data={productsData?.data || []}
+            data={currentProducts}
             renderItem={renderProductItem}
             keyExtractor={(item) => item._id}
             numColumns={2}
             contentContainerStyle={styles.productsList}
             showsVerticalScrollIndicator={false}
-            onEndReached={() => {
-              if (productsData?.data && productsData.data.length === 10) {
-                setCurrentPage(prev => prev + 1);
-              }
-            }}
-            onEndReachedThreshold={0.1}
             ListEmptyComponent={renderEmptyState}
             ListFooterComponent={renderFooter}
           />
