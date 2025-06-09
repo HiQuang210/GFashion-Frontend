@@ -1,8 +1,8 @@
 import React from "react";
 import { View, Text } from "react-native";
-import LikeButton from "@/components/FavoriteButton";
 import BackButton from "@/components/BackButton";
 import { styles } from "@/styles/product-detail/header";
+import FavoriteButton from "@/components/FavoriteButton";
 
 export default function ProductHeader() {
   return (
@@ -13,9 +13,9 @@ export default function ProductHeader() {
       {/* Title */}
       <Text style={styles.headerTitle}>Product Details</Text>
 
-      {/* Like Button */}
-      <View style={styles.likeButtonContainer}>
-        <LikeButton />
+      {/* Favorite Button */}
+      <View style={styles.favoriteButtonContainer}>
+        <FavoriteButton productId={""} />
       </View>
     </View>
   );

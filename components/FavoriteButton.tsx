@@ -1,28 +1,50 @@
 import { StyleSheet, TouchableOpacity } from "react-native";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import layout from "@/styles/layout";
-import { useState } from "react";
 import Toast from "react-native-toast-message";
+import { useAuth } from "@/hooks/useAuth";
+import { useFavorites } from "@/hooks/useFavorite";
 
-export default function LikeButton() {
-  const [touch, setTouch] = useState(false);
+interface FavoriteButtonProps {
+  productId: string;
+  onFavoriteChange?: (isFavorite: boolean) => void;
+}
 
-  function handleTouch() {
-    setTouch(!touch);
-    Toast.show({
-      type: "info",
-      text1: !touch ? "Added to Wishlist" : "Removed from Wishlist",
-      position: "top",
-    });
+export default function FavoriteButton({ 
+  productId, 
+  onFavoriteChange 
+}: FavoriteButtonProps) {
+  const { userInfo } = useAuth();
+  const { isFavorite, toggleFavorite, isLoading } = useFavorites();
+
+  const currentIsFavorite = isFavorite(productId);
+
+  async function handleTouch() {
+    if (!userInfo) {
+      Toast.show({
+        type: "error",
+        text1: "Please login to add favorites",
+        position: "top",
+      });
+      return;
+    }
+
+    if (isLoading) return;
+
+    toggleFavorite(productId);
+    
+    // Call the callback with the new state
+    onFavoriteChange?.(!currentIsFavorite);
   }
 
   return (
     <TouchableOpacity
       style={[styles.container, layout.flex_col_center]}
       onPress={handleTouch}
+      disabled={isLoading}
     >
       <AntDesign
-        name={touch ? "heart" : "hearto"}
+        name={currentIsFavorite ? "heart" : "hearto"}
         color={"#704F38"}
         size={20}
       />

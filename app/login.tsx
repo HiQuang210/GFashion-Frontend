@@ -25,7 +25,6 @@ export default function Login() {
     }
   });
 
-  // Use custom navigation hook
   const { goToSignUp, goToForgotPassword } = useNavigation({
     throttleTime: 1000,
     debounceDelay: 150,

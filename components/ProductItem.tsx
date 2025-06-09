@@ -2,17 +2,22 @@ import { Image, Text, View, StyleSheet, TouchableOpacity } from "react-native";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { router } from "expo-router";
 import text from "@/styles/text";
-import LikeButton from "./FavoriteButton";
+import FavoriteButton from "./FavoriteButton";
 import { Product } from "@/types/product";
 
 interface ProductItemProps {
   data: Product;
+  onFavoriteChange?: (productId: string, isFavorite: boolean) => void;
 }
 
-export default function ProductItem({ data }: ProductItemProps) {
+export default function ProductItem({ data, onFavoriteChange }: ProductItemProps) {
   if (!data) {
     return <View><Text>No product data</Text></View>;
   }
+
+  const handleFavoriteChange = (isFavorite: boolean) => {
+    onFavoriteChange?.(data._id, isFavorite);
+  };
 
   return (
     <TouchableOpacity
@@ -28,7 +33,10 @@ export default function ProductItem({ data }: ProductItemProps) {
           style={styles.img}
         />
         <View style={styles.favoriteButton}>
-          <LikeButton />
+          <FavoriteButton 
+            productId={data._id}
+            onFavoriteChange={handleFavoriteChange}
+          />
         </View>
       </View>
 

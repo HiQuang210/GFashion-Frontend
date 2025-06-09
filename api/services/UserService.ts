@@ -15,6 +15,13 @@ import {
   ChangePasswordResponse,
 } from "@/types/user";
 
+// Add new interface for favorite action
+export interface HandleFavoriteData {
+  action: "add" | "remove";
+  userId: string;
+  productId: string;
+}
+
 export class UserAPI {
   static async requestEmailVerification(formData: SignUpData): Promise<ApiResponse> {
     try {
@@ -129,6 +136,23 @@ export class UserAPI {
       throw error;
     }
   }
+
+  static async handleFavorite(data: HandleFavoriteData): Promise<ApiResponse> {
+    try {
+      const queryParams = new URLSearchParams({
+        action: data.action,
+        userId: data.userId,
+        productId: data.productId
+      });
+
+      const response = await axiosClient.post(`user/handle-favorite?${queryParams.toString()}`);
+      console.log("Handle favorite successful:", response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("Handle favorite error:", error.response?.data || error.message);
+      throw error;
+    }
+  }
 }
 
 export const requestEmailVerification = UserAPI.requestEmailVerification;
@@ -141,5 +165,5 @@ export const requestPasswordReset = UserAPI.requestPasswordReset;
 export const verifyResetCode = UserAPI.verifyResetCode;
 export const resetPassword = UserAPI.resetPassword;
 export const signOut = UserAPI.signOut;
-
+export const handleFavorite = UserAPI.handleFavorite;
 export { LoginData, LoginResponse };

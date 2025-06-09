@@ -20,7 +20,7 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
     marginHorizontal: 16,
   },
-  likeButtonContainer: {
+  favoriteButtonContainer: {
     width: 40,
     height: 40,
     justifyContent: 'center',

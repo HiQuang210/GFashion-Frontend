@@ -1,7 +1,31 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LoginResponse } from "@/api/services/UserService";
+import { UserInfo } from "@/types/user"; // Import UserInfo from types instead
+import { useState, useEffect } from "react";
 
 export function useAuth() {
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load user data on hook initialization
+  useEffect(() => {
+    loadUserData();
+  }, []);
+
+  const loadUserData = async () => {
+    try {
+      setIsLoading(true);
+      const authData = await getAuthData();
+      if (authData?.userInfo) {
+        setUserInfo(authData.userInfo);
+      }
+    } catch (error) {
+      console.error("Failed to load user data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const storeAuthData = async (response: LoginResponse) => {
     try {
       await AsyncStorage.multiSet([
@@ -10,6 +34,8 @@ export function useAuth() {
         ["userId", response.userInfo._id],
         ["userInfo", JSON.stringify(response.userInfo)]
       ]);
+      
+      setUserInfo(response.userInfo);
     } catch (error) {
       console.error("Failed to store auth data:", error);
       throw new Error("Failed to save authentication data");
@@ -37,6 +63,16 @@ export function useAuth() {
     }
   };
 
+  const updateUserInfo = async (updatedUser: UserInfo) => {
+    try {
+      await AsyncStorage.setItem("userInfo", JSON.stringify(updatedUser));
+      setUserInfo(updatedUser);
+    } catch (error) {
+      console.error("Failed to update user info:", error);
+      throw new Error("Failed to update user information");
+    }
+  };
+
   const clearAuthData = async () => {
     try {
       await AsyncStorage.multiRemove([
@@ -45,6 +81,9 @@ export function useAuth() {
         "userId", 
         "userInfo"
       ]);
+      
+      // Clear local state
+      setUserInfo(null);
     } catch (error) {
       console.error("Failed to clear auth data:", error);
       throw new Error("Failed to clear authentication data");
@@ -61,10 +100,20 @@ export function useAuth() {
     }
   };
 
+  const isUserAuthenticated = !!userInfo;
+
   return {
+    // Data
+    userInfo,
+    isLoading,
+    isUserAuthenticated,
+    
+    // Methods
     storeAuthData,
     getAuthData,
+    updateUserInfo,
     clearAuthData,
-    isAuthenticated
+    isAuthenticated,
+    refreshUserData: loadUserData
   };
 }

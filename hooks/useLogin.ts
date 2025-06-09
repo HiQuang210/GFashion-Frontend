@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { logIn, LoginData, LoginResponse } from "@/api/services/UserService";
+import { logIn, LoginResponse } from "@/api/services/UserService";
 import { useAuth } from "./useAuth";
 import { useToast } from "./useToast";
 import { useRouter } from "expo-router";
@@ -30,7 +30,6 @@ export function useLogIn() {
       }
     },
     onError: (error: any) => {
-      // Handle different error formats
       let message = "Login failed";
       
       if (error?.response?.data?.message) {
