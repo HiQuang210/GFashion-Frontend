@@ -34,7 +34,6 @@ export interface HandleCartData {
   quantity: number;
 }
 
-// Helper function to build query parameters
 const buildQueryParams = (params: Record<string, any>): string => {
   const queryParams = new URLSearchParams();
   
@@ -153,6 +152,7 @@ export class UserAPI {
     );
   }
   
+  // Cart methods
   static async handleCart(data: HandleCartData): Promise<CartResponse> {
     return handleApiCall(
       "Handle cart",

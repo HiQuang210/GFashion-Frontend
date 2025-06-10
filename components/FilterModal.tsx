@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import Feather from "@expo/vector-icons/Feather";
 import { filterModalStyles } from "@/styles/filtermodal";
+import { FontAwesome } from "@expo/vector-icons";
 
 interface FilterState {
   sortBy: string;
@@ -97,8 +98,8 @@ export default function FilterModal({
           {/* Fixed Header */}
           <View style={filterModalStyles.modalHeader}>
             <Text style={filterModalStyles.modalTitle}>Filter Products</Text>
-            <TouchableOpacity onPress={onClose}>
-              <Feather name="x" size={24} color="#704F38" />
+            <TouchableOpacity onPress={onClose} style={{ marginTop: -4 }}>
+              <FontAwesome name="times" size={24} color="#333" />
             </TouchableOpacity>
           </View>
 
@@ -110,7 +111,7 @@ export default function FilterModal({
               paddingBottom: Platform.OS === 'ios' ? 40 : 20,
               flexGrow: 1 
             }}
-            bounces={false} // Disable bouncing on iOS
+            bounces={false} 
           >
             {/* Sort By */}
             <View style={filterModalStyles.filterSection}>

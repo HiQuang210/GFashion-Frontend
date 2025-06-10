@@ -19,7 +19,7 @@ export const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 16,

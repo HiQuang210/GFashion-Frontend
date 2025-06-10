@@ -1,6 +1,6 @@
 import layout from "@/styles/layout";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Link, router } from "expo-router";
+import { router } from "expo-router";
 import { Dispatch, SetStateAction, useState } from "react";
 import { TouchableOpacity, View, Text } from "react-native";
 

@@ -1,7 +1,8 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { Product, ProductSize, ProductVariant } from "@/types/product";
-import { styles } from "@/styles/product-detail/selection"
+import { styles } from "@/styles/product-detail/selection";
+import { getColorFromString } from "@/types/enum/color";
 
 interface ProductSelectionsProps {
   product: Product;
@@ -11,64 +12,6 @@ interface ProductSelectionsProps {
   onVariantChange: (index: number) => void;
   onSizeChange: (size: string) => void;
 }
-
-// Color mapping function
-const getColorFromString = (colorName: string): string => {
-  const colorMap: { [key: string]: string } = {
-    'red': '#FF0000',
-    'blue': '#0000FF',
-    'green': '#008000',
-    'yellow': '#FFFF00',
-    'orange': '#FFA500',
-    'purple': '#800080',
-    'pink': '#FFC0CB',
-    'brown': '#A52A2A',
-    'black': '#000000',
-    'white': '#FFFFFF',
-    'gray': '#808080',
-    'grey': '#808080',
-    'navy': '#000080',
-    'maroon': '#800000',
-    'olive': '#808000',
-    'lime': '#00FF00',
-    'aqua': '#00FFFF',
-    'teal': '#008080',
-    'silver': '#C0C0C0',
-    'gold': '#FFD700',
-    'beige': '#F5F5DC',
-    'tan': '#D2B48C',
-    'khaki': '#F0E68C',
-    'coral': '#FF7F50',
-    'salmon': '#FA8072',
-    'crimson': '#DC143C',
-    'magenta': '#FF00FF',
-    'violet': '#EE82EE',
-    'indigo': '#4B0082',
-    'turquoise': '#40E0D0',
-    'cyan': '#00FFFF',
-    'mint': '#98FB98',
-    'lavender': '#E6E6FA',
-    'plum': '#DDA0DD',
-    'ivory': '#FFFFF0',
-    'pearl': '#F8F8FF',
-    'cream': '#F5F5DC',
-    'wheat': '#F5DEB3',
-    'linen': '#FAF0E6',
-    'snow': '#FFFAFA',
-    'chocolate': '#D2691E',
-    'sienna': '#A0522D',
-    'saddle': '#8B4513',
-    'rust': '#B7410E',
-    'copper': '#B87333',
-    'bronze': '#CD7F32',
-    'brass': '#B5A642',
-    'lightbrown': '#CD853F',
-    'darkbrown': '#654321',
-  };
-  
-  const normalizedColor = colorName.toLowerCase().replace(/\s+/g, '');
-  return colorMap[normalizedColor] || '#704F38'; // Default to brown if color not found
-};
 
 export default function ProductSelections({
   product,

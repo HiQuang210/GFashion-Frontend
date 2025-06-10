@@ -38,7 +38,6 @@ export const useNavigation = (options: UseNavigationOptions = {}) => {
     const now = Date.now();
     const timeSinceLastNavigation = now - lastNavigationTime.current;
   
-    // Check if we're already navigating
     if (isNavigating.current) {
       if (logErrors) {
         console.log('Navigation already in progress');
@@ -46,7 +45,6 @@ export const useNavigation = (options: UseNavigationOptions = {}) => {
       return false;
     }
 
-    // More lenient throttling check
     if (timeSinceLastNavigation < throttleTime) {
       if (logErrors) {
         console.log(`Navigation throttled: ${timeSinceLastNavigation}ms < ${throttleTime}ms`);
@@ -56,13 +54,11 @@ export const useNavigation = (options: UseNavigationOptions = {}) => {
     
     lastNavigationTime.current = now;
     isNavigating.current = true;
-   
-    // Clear any existing timeout
+
     if (navigationTimeoutRef.current) {
       clearTimeout(navigationTimeoutRef.current);
     }
    
-    // Use shorter debounce or navigate immediately for better UX
     const executeNavigation = () => {
       try {
         switch (method) {
@@ -81,7 +77,6 @@ export const useNavigation = (options: UseNavigationOptions = {}) => {
           console.error(`Navigation error to ${path}:`, error);
         }
       } finally {
-        // Reset navigation flag after a short delay
         setTimeout(() => {
           isNavigating.current = false;
         }, 100);

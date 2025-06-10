@@ -21,8 +21,8 @@ const TermsAgreement = ({ value, onChange }: TermsAgreementProps) => {
   const [modalVisible, setModalVisible] = useState(false);
 
   const handleAgree = () => {
-    onChange(true);         // tick checkbox
-    setModalVisible(false); // close modal
+    onChange(true);        
+    setModalVisible(false); 
   };
 
   return (

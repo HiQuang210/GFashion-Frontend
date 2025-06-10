@@ -19,7 +19,7 @@ export default function ProductDetail() {
   
   const { data, isLoading, isError } = useProductDetail(productId);
   const [activeVariantIndex, setActiveVariantIndex] = useState(0);
-  const [selectedSize, setSelectedSize] = useState("S");
+  const [selectedSize, setSelectedSize] = useState("");
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   if (isLoading) {
@@ -45,8 +45,10 @@ export default function ProductDetail() {
 
   const handleVariantChange = (index: number) => {
     setActiveVariantIndex(index);
+    // Set first available size or first size if none available
     if (product.variants[index].sizes.length > 0) {
-      setSelectedSize(product.variants[index].sizes[0].size);
+      const availableSize = product.variants[index].sizes.find(size => size.stock > 0);
+      setSelectedSize(availableSize?.size || product.variants[index].sizes[0].size);
     }
   };
 
@@ -59,6 +61,12 @@ export default function ProductDetail() {
       (sizeOption) => sizeOption.size === selectedSize
     );
     return selectedSizeData?.stock || 0;
+  };
+
+  const handleCartUpdate = () => {
+    // Optionally refetch product data to get updated stock
+    // refetch();
+    console.log("Cart updated successfully");
   };
 
   return (
@@ -95,7 +103,11 @@ export default function ProductDetail() {
       {/* Bottom Bar */}
       <ProductBottomBar
         price={getCurrentPrice()}
-        stock={getSelectedSizeStock()}
+        selectedSizeStock={getSelectedSizeStock()}
+        product={product}
+        currentVariant={currentVariant}
+        selectedSize={selectedSize}
+        onCartUpdate={handleCartUpdate}
       />
     </View>
   );

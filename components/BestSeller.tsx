@@ -1,7 +1,6 @@
 import { View, Text, ScrollView, Dimensions } from "react-native";
 import SectionHeader from "./SectionHeader";
 import ProductItem from "./ProductItem";
-import layout from "@/styles/layout";
 import { useTop3BestSellingProducts } from "@/hooks/useProduct";
 
 const { width: screenWidth } = Dimensions.get('window');

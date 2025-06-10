@@ -1,4 +1,4 @@
-import React, { RefObject } from "react";
+import React from "react";
 import { TouchableOpacity, View, StyleSheet, TextInput, Pressable } from "react-native";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Feather from "@expo/vector-icons/Feather";

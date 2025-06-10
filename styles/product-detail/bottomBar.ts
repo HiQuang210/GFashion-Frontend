@@ -32,8 +32,12 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666666',
   },
-  stockTextEmpty: {
-    color: '#FF4444',
+  outOfStockMessage: {
+    color: "#ff3b30",
+    textAlign: "left",   
+    fontWeight: "500",
+    fontSize: 14,        
+    lineHeight: 18,
   },
   addToCartButton: {
     backgroundColor: '#704F38',
