@@ -48,6 +48,9 @@ export default function RootLayout() {
             {/* Main App with Tabs */}
             <Stack.Screen name="tabs" options={{ title: "Main App" }} />
 
+            {/* Shopping Flow */}
+            <Stack.Screen name="checkout" options={{ title: "Checkout" }} />
+
             {/* Other Screens */}
             <Stack.Screen name="orders" options={{ title: "My Orders" }} />
             <Stack.Screen name="my-reviews" options={{ title: "My Reviews" }} />

@@ -17,9 +17,18 @@ import { CartItemProps } from '@/types/user';
 export default function CartItem({ data, onQuantityChange, onRemove }: CartItemProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showRemoveModal, setShowRemoveModal] = useState(false);
+
   const validation = useMemo(() => CartUtils.validateCartItem(data), [data]);
   const formattedPrice = useMemo(() => CartUtils.formatPrice(data.product.price), [data.product.price]);
   const imageUri = data.product.images?.[0] || '';
+
+  const availableStock = useMemo(() => {
+    const variant = data?.product?.variants?.find(v => v.color === data.color);
+    const sizeData = variant?.sizes.find(s => s.size === data.size);
+    return sizeData?.stock || 0;
+  }, [data?.product?.variants, data?.color, data?.size]);
+
+  const canIncrement = data?.product?._id && availableStock > 0 && data.quantity < availableStock;
 
   const {
     translateX,
@@ -33,23 +42,21 @@ export default function CartItem({ data, onQuantityChange, onRemove }: CartItemP
   });
 
   const handleQuantityUpdate = useCallback(async (newQuantity: number) => {
-    if (isLoading || !data) return;
+    if (isLoading || !data || newQuantity > availableStock) return;
     
     setIsLoading(true);
     try {
       await onQuantityChange?.(data._id, newQuantity);
-    } catch (error) {
-      console.error('Quantity update failed:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [data?._id, isLoading, onQuantityChange]);
+  }, [data, isLoading, onQuantityChange, availableStock]);
 
   const handleIncrement = useCallback(() => {
-    if (!isLoading) {
+    if (canIncrement && !isLoading) {
       handleQuantityUpdate(data.quantity + 1);
     }
-  }, [isLoading, data.quantity, handleQuantityUpdate]);
+  }, [canIncrement, isLoading, data.quantity, handleQuantityUpdate]);
 
   const handleDecrement = useCallback(() => {
     if (isLoading) return;
@@ -68,16 +75,10 @@ export default function CartItem({ data, onQuantityChange, onRemove }: CartItemP
     try {
       await onRemove?.(data._id);
       setShowRemoveModal(false);
-    } catch (error) {
-      console.error('Remove item failed:', error);
     } finally {
       setIsLoading(false);
     }
   }, [data?._id, isLoading, onRemove]);
-
-  const handleCloseModal = useCallback(() => {
-    setShowRemoveModal(false);
-  }, []);
 
   const handleNavigateToProduct = useCallback(() => {
     if (!isLoading && !isSwipeActive && (translateX as any).__getValue() === 0) {
@@ -165,10 +166,10 @@ export default function CartItem({ data, onQuantityChange, onRemove }: CartItemP
                 style={[
                   styles.quantityButton,
                   styles.decrementButton,
-                  isInteractionDisabled && styles.disabledButton,
+                  isLoading && styles.disabledButton,
                 ]}
                 onPress={handleDecrement}
-                disabled={isInteractionDisabled}
+                disabled={isLoading}
                 activeOpacity={0.7}
               >
                 <Text style={styles.decrementButtonText}>-</Text>
@@ -180,10 +181,10 @@ export default function CartItem({ data, onQuantityChange, onRemove }: CartItemP
                 style={[
                   styles.quantityButton,
                   styles.incrementButton,
-                  isInteractionDisabled && styles.disabledButton,
+                  (!canIncrement || isLoading) && styles.disabledButton,
                 ]}
                 onPress={handleIncrement}
-                disabled={isInteractionDisabled}
+                disabled={!canIncrement || isLoading}
                 activeOpacity={0.7}
               >
                 <Text style={styles.incrementButtonText}>+</Text>
@@ -203,7 +204,7 @@ export default function CartItem({ data, onQuantityChange, onRemove }: CartItemP
       {/* Remove Confirmation Modal */}
       <RemoveConfirmationModal
         visible={showRemoveModal}
-        onCancel={handleCloseModal}
+        onCancel={() => setShowRemoveModal(false)}
         onConfirm={handleRemoveItem}
         isLoading={isLoading}
       />

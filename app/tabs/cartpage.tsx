@@ -5,9 +5,11 @@ import {
   Text,
   FlatList,
   ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { UserAPI } from '@/api/services/UserService';
 import { CartItemData } from '@/types/user';
@@ -23,6 +25,7 @@ export default function CartPage() {
   const queryClient = useQueryClient();
   const { showErrorToast, showSuccessToast } = useToast();
   const { refreshCartCount } = useTabNavigation(); 
+  const router = useRouter();
 
   const { data: cartItems = [], isLoading, refetch, error } = useQuery<CartItemData[]>({
     queryKey: ['userCart', userInfo?._id],
@@ -61,7 +64,6 @@ export default function CartPage() {
     const item = cartItems.find(item => item._id === itemId);
     if (!item) return;
 
-    // Optimistic update
     queryClient.setQueryData<CartItemData[]>(['userCart', userInfo?._id], (oldData) => {
       if (!oldData) return [];
       return oldData.map(cartItem => 
@@ -83,7 +85,6 @@ export default function CartPage() {
         if (response.cart) {
           queryClient.setQueryData<CartItemData[]>(['userCart', userInfo?._id], response.cart);
         }
-        // Update cart badge count after successful update
         await refreshCartCount();
         showSuccessToast('Updated', 'Cart updated successfully');
       } else {
@@ -105,7 +106,6 @@ export default function CartPage() {
     const item = cartItems.find(item => item._id === itemId);
     if (!item) return;
 
-    // Optimistic update
     queryClient.setQueryData<CartItemData[]>(['userCart', userInfo?._id], (oldData) => {
       if (!oldData) return [];
       return oldData.filter(cartItem => cartItem._id !== itemId);
@@ -122,7 +122,6 @@ export default function CartPage() {
         if (response.cart) {
           queryClient.setQueryData<CartItemData[]>(['userCart', userInfo?._id], response.cart);
         }
-        // Update cart badge count after successful removal
         await refreshCartCount();
         showSuccessToast('Removed', 'Item removed from cart');
       } else {
@@ -143,6 +142,10 @@ export default function CartPage() {
   const cartSummary = React.useMemo(() => {
     return CartUtils.getCartSummary(cartItems);
   }, [cartItems]);
+
+  const handleProceedToCheckout = () => {
+    router.push('/checkout');
+  };
 
   const renderCartItem = React.useCallback(({ item }: { item: CartItemData }) => (
     <CartItem
@@ -190,6 +193,22 @@ export default function CartPage() {
     );
   };
 
+  const renderCheckoutButton = () => {
+    if (cartSummary.isEmpty) return null;
+
+    return (
+      <View style={styles.checkoutButtonContainer}>
+        <TouchableOpacity
+          style={styles.checkoutButton}
+          onPress={handleProceedToCheckout}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
@@ -214,7 +233,12 @@ export default function CartPage() {
             contentContainerStyle={styles.cartList}
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={renderEmptyState}
-            ListFooterComponent={renderCartSummary}
+            ListFooterComponent={() => (
+              <>
+                {renderCartSummary()}
+                {renderCheckoutButton()}
+              </>
+            )}
             removeClippedSubviews={true}
             maxToRenderPerBatch={10}
             windowSize={10}

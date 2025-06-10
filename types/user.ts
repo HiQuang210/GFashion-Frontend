@@ -1,3 +1,5 @@
+import { ProductVariant } from "./product";
+
 export interface UserInfo {
   _id: string;
   email: string;
@@ -97,7 +99,6 @@ export interface RefreshTokenResponse extends ApiResponse {
   refresh_token?: string;
 }
 
-// Cart-related interfaces - consolidated and optimized
 export interface CartProduct {
   _id: string;
   name: string;
@@ -105,6 +106,7 @@ export interface CartProduct {
   images: string[];
   rating?: number;
   sold?: number;
+  variants: ProductVariant[];
 }
 
 export interface CartItem {

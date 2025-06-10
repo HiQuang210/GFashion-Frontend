@@ -1,4 +1,3 @@
-// Product variant types
 export interface ProductSize {
   size: string;
   stock: number;
@@ -9,7 +8,6 @@ export interface ProductVariant {
   sizes: ProductSize[];
 }
 
-// Main product interface
 export interface Product {
   _id: string;
   name: string;
@@ -24,10 +22,9 @@ export interface Product {
   sold: number;
   createdAt: string;
   updatedAt: string;
-  firstImage?: string; // Virtual field from backend
+  firstImage?: string; 
 }
 
-// API Request/Response types
 export interface GetProductsQuery {
   limitItem?: number;
   page?: number;
@@ -59,7 +56,6 @@ export interface GetTotalPagesResponse extends ApiResponse {
   total: number;
 }
 
-// Product filtering and sorting types
 export interface ProductFilters {
   type?: string;
   producer?: string;
@@ -74,7 +70,6 @@ export interface ProductSortOptions {
   order: 'asc' | 'desc';
 }
 
-// Cart and wishlist related types
 export interface ProductCartItem {
   productId: string;
   product: Product;
@@ -146,14 +141,12 @@ export interface ProductReviewSummary {
   };
 }
 
-// Error types
 export interface ProductError {
   field?: string;
   message: string;
   code?: string;
 }
 
-// Import ApiResponse from user types
 export interface ApiResponse<T = any> {
   status: string;
   message: string;
