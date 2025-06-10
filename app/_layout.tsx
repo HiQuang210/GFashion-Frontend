@@ -50,12 +50,21 @@ export default function RootLayout() {
 
             {/* Other Screens */}
             <Stack.Screen name="orders" options={{ title: "My Orders" }} />
-            <Stack.Screen name="myreviews" options={{ title: "My Reviews" }} />
+            <Stack.Screen name="my-reviews" options={{ title: "My Reviews" }} />
             <Stack.Screen name="settings" options={{ title: "settings" }} />
-            <Stack.Screen name="changeInfo" options={{ title: "changeInfo" }} />
+            <Stack.Screen name="my-profile" options={{ title: "my-profile" }} />
+            <Stack.Screen name="edit-profile" options={{ title: "edit-profile" }} />
             <Stack.Screen
               name="change-password"
               options={{ title: "Change Password" }}
+            />
+            <Stack.Screen
+              name="help-center"
+              options={{ title: "Help Center" }}
+            />
+            <Stack.Screen
+              name="privacy-policy"
+              options={{ title: "Privacy Policy" }}
             />
           </Stack>
 

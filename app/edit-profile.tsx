@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   ActivityIndicator,
@@ -10,14 +9,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useForm, Controller } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
 import { useUser } from "@/hooks/useUser";
 import { useUpdateUser } from "@/hooks/useUpdateUser";
 import { useToast } from "@/hooks/useToast";
-
 import Input from "@/components/Input";
 import CustomButton from "@/components/CustomButton";
-import BackButton from "@/components/BackButton";
+import SubPageHeader from "@/components/SubPageHeader";
 
 interface FormData {
   phone: string;
@@ -82,11 +79,7 @@ export default function ChangeInfo() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <BackButton />
-        <Text style={styles.headerTitle}>Edit Profile</Text>
-        <View style={{ width: 40 }} />
-      </View>
+      <SubPageHeader title="Edit Profile" />
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
@@ -192,19 +185,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "600",
   },
   scrollContent: {
     padding: 20,

@@ -71,7 +71,7 @@ export default function ProfilePage() {
       formData.append("avatar", {
         uri: picked.uri,
         name: picked.fileName || `avatar_${Date.now()}.jpg`,
-        type: "image/jpeg",
+        type: picked.mimeType || "image/jpeg",
       } as any);
 
       uploadMutation.mutate({ id: userId, data: {}, file: formData } as any, {
@@ -111,8 +111,8 @@ export default function ProfilePage() {
     : require("@/assets/images/default-avatar.png");
 
   const navigateToOrders = () => router.push("/orders");
-  const navigateToChangeInfo = () => router.push("/changeInfo");
-  const navigateToMyReviews = () => router.push("/myreviews");
+  const navigateToChangeInfo = () => router.push("/edit-profile");
+  const navigateToMyReviews = () => router.push("/my-reviews");
 
   return (
     <SafeAreaView style={styles.container}>
@@ -166,7 +166,7 @@ export default function ProfilePage() {
               onPress={navigateToMyReviews}
             />
             <StatsCard
-              icon="money"
+              icon="dollar-sign"
               label="Total Spent"
               value={formatCurrency(userData.totalSpent).replace("₫", "")}
             />
@@ -177,23 +177,26 @@ export default function ProfilePage() {
           <SectionProfile
             icon="user"
             content="Account Info"
-            route="/changeInfo"
-          />
-          <SectionProfile icon="gear" content="Settings" route="/settings" />
-          <SectionProfile
-            icon="map-marker"
-            content="Shipping Addresses"
-            route=""
+            route="/my-profile"
           />
           <SectionProfile
-            icon="exclamation-circle"
+            icon="settings"
+            content="Settings"
+            route="/settings"
+          />
+          <SectionProfile
+            icon="help-circle"
             content="Help Center"
-            route=""
+            route="/help-center"
           />
-          <SectionProfile icon="lock" content="Privacy Policy" route="" />
+          <SectionProfile
+            icon="shield"
+            content="Privacy Policy"
+            route="/privacy-policy"
+          />
           <View style={styles.separator} />
           <SectionProfile
-            icon={"sign-out"}
+            icon={"log-out"}
             content={"Log Out"}
             handlePress={() => setShowLogout(true)}
             route={""}

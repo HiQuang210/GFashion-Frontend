@@ -15,6 +15,8 @@ import {
   ChangePasswordResponse,
   CartResponse,
 } from "@/types/user";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 
 export interface HandleFavoriteData {
   action: "add" | "remove";
@@ -95,30 +97,22 @@ export class UserAPI {
     data: UpdateUserData,
     file?: any
   ): Promise<UpdateUserResponse> {
-    if (file) {
-      const formData = new FormData();
+    const token = await AsyncStorage.getItem("accessToken");
 
-      formData.append("avatar", file);
+    return handleApiCall("Update user", async () => {
+      if (file) {
+        if (!token) throw new Error("No access token found");
 
-      (Object.keys(data) as Array<keyof UpdateUserData>).forEach((key) => {
-        const value = data[key];
-        if (value !== undefined && value !== null) {
-          formData.append(key, value);
-        }
-      });
-
-      return axiosClient
-        .put(`/user/update-user/${userId}`, formData, {
+        return axiosClient.put(`/user/update-user/${userId}`, file, {
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data",
           },
-        })
-        .then((res) => res.data);
-    } else {
-      return axiosClient
-        .put(`/user/update-user/${userId}`, data)
-        .then((res) => res.data);
-    }
+        });
+      } else {
+        return axiosClient.put(`/user/update-user/${userId}`, data);
+      }
+    });
   }
 
   static async changePassword(

@@ -1,26 +1,15 @@
-import { Link, useRouter } from "expo-router";
-import { Text, TouchableOpacity, View, StyleSheet, Image } from "react-native";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Text, View, StyleSheet, Image } from "react-native";
 
 import layout from "@/styles/layout";
 import { useUser } from "@/hooks/useUser";
-import { useEffect, useState } from "react";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 export default function HomeHeader() {
-  const [userId, setUserId] = useState<string | undefined>(undefined);
+  const { userInfo } = useAuthContext();
 
-  useEffect(() => {
-    AsyncStorage.getItem("userId")
-      .then((id) => {
-        setUserId(id || undefined);
-      })
-      .catch((err) => console.error("AsyncStorage error:", err));
-  }, []);
+  const { user, isLoading } = useUser(userInfo?._id);
 
-  const { user, isLoading } = useUser(userId);
-
-  if (!userId || isLoading) {
+  if (!userInfo?._id || isLoading) {
     return <Text>loading...</Text>;
   }
 
@@ -34,7 +23,7 @@ export default function HomeHeader() {
         <View style={[layout.flex_row, { alignItems: "center" }]}>
           <Image
             source={
-              user.data?.img 
+              user.data?.img
                 ? { uri: user.data.img }
                 : require("@/assets/images/default-avatar.png")
             }

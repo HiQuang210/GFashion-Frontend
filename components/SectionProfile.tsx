@@ -1,14 +1,15 @@
 import layout from "@/styles/layout";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Link, router } from "expo-router";
+import { Feather } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { Dispatch, SetStateAction, useState } from "react";
-import { TouchableOpacity, View, Text } from "react-native";
+import { TouchableOpacity, View, Text, StyleSheet } from "react-native";
 
 interface props {
-  icon: string;
+  icon: React.ComponentProps<typeof Feather>["name"];
   content: string;
   route: string;
   handlePress?: () => void;
+  color?: string;
 }
 
 export default function SectionProfile({
@@ -16,6 +17,7 @@ export default function SectionProfile({
   content,
   route,
   handlePress,
+  color = "#333",
 }: props) {
   function hanldeButton() {
     if (handlePress) {
@@ -27,24 +29,35 @@ export default function SectionProfile({
 
   return (
     <TouchableOpacity
-      style={{
-        display: "flex",
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        paddingHorizontal: 20,
-        paddingVertical: 15,
-        borderBottomColor: "#ededed",
-        borderBottomWidth: 1,
-      }}
+      style={styles.container}
       onPress={hanldeButton}
+      activeOpacity={0.6}
     >
-      <View style={[layout.flex_row, { gap: 10 }]}>
-        <FontAwesome name={icon as any} size={22} color={"#704F38"} />
-        <Text style={{ fontSize: 18, color: "#704F38" }}>{content}</Text>
+      <View style={styles.left}>
+        <Feather name={icon} size={22} color={"#704F38"} />
+        <Text style={[styles.content, { color: color }]}>{content}</Text>
       </View>
 
-      <FontAwesome name="chevron-right" size={22} color={"#704F38"} />
+      <Feather name="chevron-right" size={22} color={"#704F38"} />
     </TouchableOpacity>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+    backgroundColor: "#fff",
+  },
+  left: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+  },
+  content: {
+    fontSize: 16,
+  },
+});

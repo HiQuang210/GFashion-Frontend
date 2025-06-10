@@ -9,7 +9,6 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useQuery } from "@tanstack/react-query";
 import { ReviewAPI } from "@/api/services/ReviewService";
-
 import BackButton from "@/components/BackButton";
 import ReviewItemCard from "@/components/ReviewItemCard";
 

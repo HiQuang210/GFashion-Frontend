@@ -13,16 +13,13 @@ export function useLogIn() {
     mutationFn: logIn,
     onSuccess: async (response: LoginResponse) => {
       try {
-        // Store authentication data
         await storeAuthData(response);
 
-        // Show success message
         showSuccessToast(
           "Welcome back!",
           `Hi ${response.userInfo.firstName}`
         );
 
-        // Navigate to homepage
         router.replace("/tabs/homepage");
       } catch (error) {
         console.error("Error storing auth data:", error);

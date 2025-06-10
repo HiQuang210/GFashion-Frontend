@@ -1,11 +1,13 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LoginResponse } from "@/api/services/UserService";
-import { UserInfo } from "@/types/user"; 
-import { useState, useEffect } from "react";
+import { UserInfo } from "@/types/user";
+import { useState, useEffect, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function useAuth() {
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     loadUserData();
@@ -31,9 +33,9 @@ export function useAuth() {
         ["accessToken", response.access_token],
         ["refreshToken", response.refresh_token],
         ["userId", response.userInfo._id],
-        ["userInfo", JSON.stringify(response.userInfo)]
+        ["userInfo", JSON.stringify(response.userInfo)],
       ]);
-      
+
       setUserInfo(response.userInfo);
     } catch (error) {
       console.error("Failed to store auth data:", error);
@@ -45,16 +47,16 @@ export function useAuth() {
     try {
       const authData = await AsyncStorage.multiGet([
         "accessToken",
-        "refreshToken", 
+        "refreshToken",
         "userId",
-        "userInfo"
+        "userInfo",
       ]);
-      
+
       return {
         accessToken: authData[0][1],
         refreshToken: authData[1][1],
         userId: authData[2][1],
-        userInfo: authData[3][1] ? JSON.parse(authData[3][1]) : null
+        userInfo: authData[3][1] ? JSON.parse(authData[3][1]) : null,
       };
     } catch (error) {
       console.error("Failed to get auth data:", error);
@@ -72,22 +74,23 @@ export function useAuth() {
     }
   };
 
-  const clearAuthData = async () => {
+  const clearAuthData = useCallback(async () => {
     try {
       await AsyncStorage.multiRemove([
         "accessToken",
         "refreshToken",
-        "userId", 
-        "userInfo"
+        "userId",
+        "userInfo",
       ]);
-      
-      // Clear local state
+
       setUserInfo(null);
+
+      queryClient.clear();
     } catch (error) {
       console.error("Failed to clear auth data:", error);
       throw new Error("Failed to clear authentication data");
     }
-  };
+  }, [queryClient]);
 
   const isAuthenticated = async () => {
     try {
@@ -106,13 +109,13 @@ export function useAuth() {
     userInfo,
     isLoading,
     isUserAuthenticated,
-    
+
     // Methods
     storeAuthData,
     getAuthData,
     updateUserInfo,
     clearAuthData,
     isAuthenticated,
-    refreshUserData: loadUserData
+    refreshUserData: loadUserData,
   };
 }

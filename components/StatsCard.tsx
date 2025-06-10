@@ -1,9 +1,9 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { Feather } from "@expo/vector-icons";
 
 interface StatsCardProps {
-  icon: React.ComponentProps<typeof FontAwesome>["name"];
+  icon: React.ComponentProps<typeof Feather>["name"];
   label: string;
   value: any;
   onPress?: () => void;
@@ -14,7 +14,7 @@ const StatsCard = ({ icon, label, value, onPress }: StatsCardProps) => {
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} disabled={!onPress}>
-      <FontAwesome name={icon} size={24} color="#704F38" />
+      <Feather name={icon} size={24} color="#704F38" />
       <Text style={styles.value}>{displayValue}</Text>
       <Text style={styles.label}>{label}</Text>
     </TouchableOpacity>
