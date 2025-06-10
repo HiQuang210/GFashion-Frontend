@@ -41,7 +41,7 @@ export default function ProductBottomBar({ price, stock }: ProductBottomBarProps
           styles.addToCartText,
           isOutOfStock && styles.addToCartTextDisabled
         ]}>
-          {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+          Add to Cart
         </Text>
       </TouchableOpacity>
     </View>

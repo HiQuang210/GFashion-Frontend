@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -15,45 +15,40 @@ import { ProductAPI } from "@/api/services/ProductService";
 import { Product } from "@/types/product";
 import { styles } from "@/styles/searchpage";
 import { CATEGORIES, SORT_OPTIONS, PRODUCERS } from "@/types/enum/filter";
-
-interface FilterState {
-  sortBy: string;
-  priceRange: { min: string; max: string };
-  selectedProducer: string;
-}
-
-const INITIAL_FILTER_STATE: FilterState = {
-  sortBy: "newest",
-  priceRange: { min: "", max: "" },
-  selectedProducer: "",
-};
+import { useFilter, FilterState } from "@/hooks/useFilter";
 
 const PRODUCTS_PER_PAGE = 8;
 
 export default function SearchPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
   const [currentPage, setCurrentPage] = useState(0);
   const [showFilterModal, setShowFilterModal] = useState(false);
-  const [filters, setFilters] = useState<FilterState>(INITIAL_FILTER_STATE);
 
-  const { data: productsData, isLoading, refetch } = useQuery({
+  // Use the custom filter hook
+  const {
+    filters,
+    selectedCategory,
+    updateFilters,
+    updateCategory,
+    clearAllFilters,
+    buildApiParams,
+    getActiveFiltersText,
+    hasActiveFilters,
+    activeFiltersCount,
+  } = useFilter({
+    onFiltersChange: () => {
+      setCurrentPage(0);
+    }
+  });
+
+  const { data: productsData, isLoading, error } = useQuery({
     queryKey: ["products", searchQuery, selectedCategory, currentPage, filters],
     queryFn: () => {
-      const params: any = {
-        page: currentPage + 1,
-        limitItem: PRODUCTS_PER_PAGE,
-        sort: filters.sortBy,
-      };
-      
-      if (searchQuery) params.searchQuery = searchQuery;
-      if (selectedCategory !== "all") params.filter = selectedCategory;
-      if (filters.selectedProducer) {
-        params.filter = filters.selectedProducer;
-      }
-
+      const params = buildApiParams(searchQuery, currentPage, PRODUCTS_PER_PAGE);
       return ProductAPI.getAllProducts(params);
     },
+    staleTime: 30000, // 30 seconds
+    gcTime: 300000, // 5 minutes 
   });
 
   const currentProducts = productsData?.data || [];
@@ -61,21 +56,22 @@ export default function SearchPage() {
   const hasNextPage = currentPage < totalPages - 1;
 
   const handleCategoryChange = useCallback((categoryId: string) => {
-    setSelectedCategory(categoryId);
+    updateCategory(categoryId);
     setCurrentPage(0);
-  }, []);
+  }, [updateCategory]);
 
   const handleApplyFilters = useCallback((newFilters: FilterState) => {
-    setFilters(newFilters);
+    console.log('Applying filters:', newFilters);
+    updateFilters(newFilters);
     setCurrentPage(0);
     setShowFilterModal(false);
-    refetch();
-  }, [refetch]);
+  }, [updateFilters]);
 
   const handleClearFilters = useCallback(() => {
-    setFilters(INITIAL_FILTER_STATE);
+    console.log('Clearing all filters');
+    clearAllFilters();
     setCurrentPage(0);
-  }, []);
+  }, [clearAllFilters]);
 
   const handlePageChange = useCallback((page: number) => {
     if (page >= 0 && page < totalPages) {
@@ -83,15 +79,27 @@ export default function SearchPage() {
     }
   }, [totalPages]);
 
-  const renderProductItem = ({ item }: { item: Product }) => (
+  const handleSearchChange = useCallback((query: string) => {
+    setSearchQuery(query);
+    setCurrentPage(0); 
+  }, []);
+
+  const renderProductItem = useCallback(({ item }: { item: Product }) => (
     <View style={styles.productItemContainer}>
       <ProductItem data={item} />
     </View>
-  );
+  ), []);
 
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
-      <Text style={styles.emptyText}>No products found</Text>
+      <Text style={styles.emptyText}>
+        {error ? "Error loading products" : "No products found"}
+      </Text>
+      {hasActiveFilters && (
+        <Text style={styles.emptySubText}>
+          Try adjusting your filters or search terms
+        </Text>
+      )}
     </View>
   );
 
@@ -115,14 +123,17 @@ export default function SearchPage() {
     return null;
   };
 
+  const activeFiltersText = getActiveFiltersText();
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header with Search Bar */}
       <View style={styles.header}>
         <SearchBar
           value={searchQuery}
-          onChangeText={setSearchQuery}
+          onChangeText={handleSearchChange}
           onFilterPress={() => setShowFilterModal(true)}
+          placeholder="Search something..."
         />
       </View>
 
@@ -132,6 +143,23 @@ export default function SearchPage() {
         selectedCategory={selectedCategory}
         onCategoryChange={handleCategoryChange}
       />
+
+      {/* Active Filters Display */}
+      {activeFiltersText && (
+        <View style={[styles.header, styles.activeFiltersContainer]}>
+          <Text style={styles.activeFiltersText}>
+            Active filters: {activeFiltersText}
+          </Text>
+          {hasActiveFilters && (
+            <Text 
+              style={styles.clearFiltersButton}
+              onPress={handleClearFilters}
+            >
+              Clear All
+            </Text>
+          )}
+        </View>
+      )}
 
       {/* Products Grid */}
       <View style={styles.productsContainer}>
@@ -147,6 +175,16 @@ export default function SearchPage() {
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={renderEmptyState}
             ListFooterComponent={renderFooter}
+            // Performance optimizations
+            removeClippedSubviews={true}
+            maxToRenderPerBatch={10}
+            windowSize={10}
+            initialNumToRender={8}
+            getItemLayout={(data, index) => ({
+              length: 200, // Approximate item height
+              offset: 200 * index,
+              index,
+            })}
           />
         )}
       </View>

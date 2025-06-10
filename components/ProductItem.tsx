@@ -12,7 +12,11 @@ interface ProductItemProps {
 
 export default function ProductItem({ data, onFavoriteChange }: ProductItemProps) {
   if (!data) {
-    return <View><Text>No product data</Text></View>;
+    return (
+      <View>
+        <Text>No product data</Text>
+      </View>
+    );
   }
 
   const handleFavoriteChange = (isFavorite: boolean) => {
@@ -28,36 +32,34 @@ export default function ProductItem({ data, onFavoriteChange }: ProductItemProps
     >
       <View style={styles.imageContainer}>
         <Image
-          source={{ uri: data.images?.[0] || '' }}
+          source={{ uri: data.images?.[0] || "" }}
           resizeMode="stretch"
           style={styles.img}
         />
         <View style={styles.favoriteButton}>
-          <FavoriteButton 
-            productId={data._id}
-            onFavoriteChange={handleFavoriteChange}
-          />
+          <FavoriteButton productId={data._id} onFavoriteChange={handleFavoriteChange} />
         </View>
       </View>
 
       <View style={styles.productInfo}>
         <View style={styles.leftInfo}>
-          <Text
-            numberOfLines={1}
-            ellipsizeMode="tail"
-            style={styles.name_product}
-          >
-            {data.name || 'Unknown Product'}
+          <Text numberOfLines={1} ellipsizeMode="tail" style={styles.name_product}>
+            {data.name || "Unknown Product"}
           </Text>
           <Text style={styles.price}>
-            {data.price?.toLocaleString?.("vi-VN") || '0'}đ
+            {data.price?.toLocaleString?.("vi-VN") || "0"}đ
           </Text>
         </View>
-        
-        <View style={styles.ratingContainer}>
-          <FontAwesome name="star" size={16} color={"#fcaf23"} />
-          <Text style={[text.gray_text, styles.ratingText]}>
-            {data.rating || '0'}
+
+        <View style={styles.rightInfo}>
+          <View style={styles.ratingContainer}>
+            <FontAwesome name="star" size={16} color={"#fcaf23"} />
+            <Text style={[text.gray_text, styles.ratingText]}>
+              {data.rating || "0"}
+            </Text>
+          </View>
+          <Text style={styles.soldText}>
+            {data.sold ?? 0} sold
           </Text>
         </View>
       </View>
@@ -83,7 +85,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     position: "relative",
-    marginBottom: 12, 
+    marginBottom: 12,
   },
   img: {
     width: "100%",
@@ -114,6 +116,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
+  rightInfo: {
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+    height: 40,
+    marginTop: -2,
+  },
   ratingContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -121,5 +129,9 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: 12,
+  },
+  soldText: {
+    fontSize: 12,
+    color: "#999",
   },
 });

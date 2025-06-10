@@ -56,4 +56,25 @@ export const styles = StyleSheet.create({
     color: "#666",
     textAlign: "center",
   },
+  activeFiltersContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  activeFiltersText: {
+    fontSize: 12,
+    color: '#666',
+    fontStyle: 'italic',
+    flex: 1,
+  },
+  clearFiltersButton: {
+    fontSize: 12,
+    color: '#007AFF',
+    fontWeight: '500',
+  },
+  emptySubText: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 4,
+  },
 });

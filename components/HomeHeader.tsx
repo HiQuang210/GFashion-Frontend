@@ -47,13 +47,6 @@ export default function HomeHeader() {
             <Text style={styles.main_title_text}>{user.data.firstName}</Text>
           </View>
         </View>
-        <Link href="/" style={[styles.notify_btn, { paddingTop: 2 }]}>
-          <Ionicons
-            name="notifications"
-            size={25}
-            style={{ textAlign: "center" }}
-          />
-        </Link>
       </View>
     </View>
   );

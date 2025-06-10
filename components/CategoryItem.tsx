@@ -28,16 +28,6 @@ export default function CategoryItem({ content, onPress }: InputProps) {
   };
 
   const renderIcon = () => {
-    if (content === "other") {
-      return (
-        <Feather
-          name="layers"
-          size={25}
-          color="#704F38"
-        />
-      );
-    }
-    
     return (
       <Image
         source={imageMap[content]}

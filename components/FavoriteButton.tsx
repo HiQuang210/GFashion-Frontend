@@ -45,7 +45,7 @@ export default function FavoriteButton({
         name={currentIsFavorite ? "heart" : "hearto"}
         color={"#704F38"}
         size={20}
-        style={{ marginTop: 4 }}
+        style={{ marginTop: 2 }}
       />
     </TouchableOpacity>
   );

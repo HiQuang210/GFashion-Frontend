@@ -7,7 +7,6 @@ import {
   ScrollView,
   TextInput,
   Platform,
-  Dimensions,
 } from "react-native";
 import Feather from "@expo/vector-icons/Feather";
 import { filterModalStyles } from "@/styles/filtermodal";
@@ -152,9 +151,9 @@ export default function FilterModal({
               </View>
             </View>
 
-            {/* Producer/Brand */}
+            {/* Producer/Producer */}
             <View style={filterModalStyles.filterSection}>
-              <Text style={filterModalStyles.filterSectionTitle}>Brand</Text>
+              <Text style={filterModalStyles.filterSectionTitle}>Producer</Text>
               {producers.map((producer) => (
                 <TouchableOpacity
                   key={producer}

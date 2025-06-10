@@ -8,238 +8,205 @@ import {
   ProductSearchParams,
 } from "@/types/product";
 
+interface ExtendedGetProductsQuery extends GetProductsQuery {
+  producer?: string;
+  minPrice?: string | number;
+  maxPrice?: string | number;
+}
+
+const buildQueryParams = (params: Record<string, any>): string => {
+  return new URLSearchParams(
+    Object.entries(params).filter(([_, value]) => 
+      value !== undefined && value !== null && value !== ''
+    ).map(([key, value]) => [key, value.toString()])
+  ).toString();
+};
+
+const handleError = (error: any, operation: string) => {
+  console.error(`${operation} error:`, error.response?.data || error.message);
+  throw error;
+};
+
+const SORT_MAPPING = {
+  'price-low': 'price-asc',
+  'price-high': 'price-desc',
+} as const;
+
+const safeNumberConversion = (value: string | number | undefined): number | undefined => {
+  if (value === undefined || value === null || value === '') return undefined;
+  
+  const num = typeof value === 'string' ? parseFloat(value.replace(/,/g, '')) : Number(value);
+  return !isNaN(num) && num >= 0 ? num : undefined;
+};
+
 export class ProductAPI {
-  /**
-   * Get all products with pagination, filtering, and sorting
-   */
-  static async getAllProducts(params: GetProductsQuery = {}): Promise<GetProductsResponse> {
+  static async getAllProducts(params: ExtendedGetProductsQuery = {}): Promise<GetProductsResponse> {
     try {
-      const {
-        limitItem = 8,
-        page = 1, // Backend uses 1-based pagination
-        sort,
-        filter,
-        searchQuery,
-      } = params;
+      const queryParams: Record<string, any> = {
+        limitItem: params.limitItem || 8,
+        page: params.page || 1,
+        sort: params.sort,
+        filter: params.filter,
+        producer: params.producer,
+        searchQuery: params.searchQuery,
+      };
 
-      const queryParams = new URLSearchParams();
+      const minPrice = safeNumberConversion(params.minPrice);
+      const maxPrice = safeNumberConversion(params.maxPrice);
       
-      if (limitItem) queryParams.append('limitItem', limitItem.toString());
-      if (page) queryParams.append('page', page.toString());
-      if (sort) queryParams.append('sort', sort);
-      if (filter) queryParams.append('filter', filter);
-      if (searchQuery) queryParams.append('searchQuery', searchQuery);
+      if (minPrice !== undefined) {
+        queryParams.minPrice = minPrice;
+      }
+      if (maxPrice !== undefined) {
+        queryParams.maxPrice = maxPrice;
+      }
 
-      const response = await axiosClient.get(`product/get-all?${queryParams.toString()}`);
-      console.log("Get all products successful:", response.data);
+      const queryString = buildQueryParams(queryParams);
+      const response = await axiosClient.get(`product/get-all?${queryString}`);
       return response.data;
     } catch (error: any) {
-      console.error("Get all products error:", error.response?.data || error.message);
-      throw error;
+      return handleError(error, "Get all products");
     }
   }
 
-  /**
-   * Search products with advanced filters - Updated to use getAllProducts
-   */
   static async searchProducts(searchParams: ProductSearchParams): Promise<GetProductsResponse> {
     try {
       const {
-        query,
-        type,
-        producer,
-        minPrice,
-        maxPrice,
-        rating,
-        sortBy,
-        sortOrder = 'asc',
-        page = 0, // Frontend uses 0-based
-        limit = 8,
+        query, type, producer, sortBy, page = 0, limit = 8, minPrice, maxPrice
       } = searchParams;
 
-      // Convert sortBy to backend format
-      let backendSort = sortBy;
-      if (sortBy === 'price-low') {
-        backendSort = 'price-asc';
-      } else if (sortBy === 'price-high') {
-        backendSort = 'price-desc';
-      }
-
-      // Build filter string based on your backend's filter format
-      let filterString = '';
-      if (type && type !== 'all') {
-        filterString = type;
-      }
-      
-      // Note: Your current backend doesn't seem to support multiple filters or price range
-      // You might need to update your backend to handle producer, price range filters
-
-      const params: GetProductsQuery = {
-        page: page + 1, // Convert to 1-based for backend
+      const params: ExtendedGetProductsQuery = {
+        page: page + 1,
         limitItem: limit,
-        sort: backendSort,
-        filter: filterString || undefined,
+        sort: SORT_MAPPING[sortBy as keyof typeof SORT_MAPPING] || sortBy,
         searchQuery: query || undefined,
+        filter: type && type !== 'all' ? type : undefined,
+        producer: producer && producer !== 'all' ? producer : undefined,
       };
+
+      const convertedMinPrice = safeNumberConversion(minPrice);
+      const convertedMaxPrice = safeNumberConversion(maxPrice);
+      
+      if (convertedMinPrice !== undefined) {
+        params.minPrice = convertedMinPrice;
+      }
+      if (convertedMaxPrice !== undefined) {
+        params.maxPrice = convertedMaxPrice;
+      }
 
       return await ProductAPI.getAllProducts(params);
     } catch (error: any) {
-      console.error("Search products error:", error.response?.data || error.message);
-      throw error;
+      return handleError(error, "Search products");
     }
   }
 
-  /**
-   * Get product by ID
-   */
   static async getProductDetail(productId: string): Promise<GetProductDetailResponse> {
     try {
-      if (!productId) {
-        throw new Error("Product ID is required");
-      }
+      if (!productId) throw new Error("Product ID is required");
 
       const response = await axiosClient.get(`product/get-detail/${productId}`);
-      console.log("Get product detail successful:", response.data);
       return response.data;
     } catch (error: any) {
-      console.error("Get product detail error:", error.response?.data || error.message);
-      throw error;
+      return handleError(error, "Get product detail");
     }
   }
 
-  /**
-   * Get total pages for pagination
-   */
-  static async getTotalPages(params: GetTotalPagesQuery = {}): Promise<GetTotalPagesResponse> {
+  static async getTotalPages(params: GetTotalPagesQuery & { 
+    producer?: string;
+    minPrice?: string | number;
+    maxPrice?: string | number;
+  } = {}): Promise<GetTotalPagesResponse> {
     try {
-      const { limitItem = 8, filter } = params;
+      const queryParams: Record<string, any> = {
+        limitItem: params.limitItem || 8,
+        filter: params.filter,
+        producer: params.producer,
+      };
 
-      const queryParams = new URLSearchParams();
-      if (limitItem) queryParams.append('limitItem', limitItem.toString());
-      if (filter) queryParams.append('filter', filter);
+      const minPrice = safeNumberConversion(params.minPrice);
+      const maxPrice = safeNumberConversion(params.maxPrice);
+      
+      if (minPrice !== undefined) {
+        queryParams.minPrice = minPrice;
+      }
+      if (maxPrice !== undefined) {
+        queryParams.maxPrice = maxPrice;
+      }
 
-      const response = await axiosClient.get(`product/get-total-pages?${queryParams.toString()}`);
-      console.log("Get total pages successful:", response.data);
+      const queryString = buildQueryParams(queryParams);
+      const response = await axiosClient.get(`product/get-total-pages?${queryString}`);
       return response.data;
     } catch (error: any) {
-      console.error("Get total pages error:", error.response?.data || error.message);
-      throw error;
+      return handleError(error, "Get total pages");
     }
   }
 
-  /**
-   * Get products by type/category
-   */
-  static async getProductsByType(
-    type: string,
+  private static async getProductsByCriteria(
+    criteria: Partial<ExtendedGetProductsQuery>,
     page: number = 0,
     limit: number = 8
   ): Promise<GetProductsResponse> {
+    return this.getAllProducts({
+      ...criteria,
+      page: page + 1,
+      limitItem: limit,
+    });
+  }
+
+  static async getProductsByType(type: string, page?: number, limit?: number): Promise<GetProductsResponse> {
     try {
-      return await ProductAPI.getAllProducts({
-        filter: type,
-        page: page + 1, // Convert to 1-based
-        limitItem: limit,
-      });
+      return await ProductAPI.getProductsByCriteria({ filter: type }, page, limit);
     } catch (error: any) {
-      console.error("Get products by type error:", error.response?.data || error.message);
-      throw error;
+      return handleError(error, "Get products by type");
     }
   }
 
-  /**
-   * Get products by producer/brand
-   */
-  static async getProductsByProducer(
-    producer: string,
-    page: number = 0,
-    limit: number = 8
-  ): Promise<GetProductsResponse> {
+  static async getProductsByProducer(producer: string, page?: number, limit?: number): Promise<GetProductsResponse> {
     try {
-      // Note: Your backend might not support producer filter yet
-      return await ProductAPI.getAllProducts({
-        filter: producer, // You might need to adjust this format
-        page: page + 1, // Convert to 1-based
-        limitItem: limit,
-      });
+      return await ProductAPI.getProductsByCriteria({ producer }, page, limit);
     } catch (error: any) {
-      console.error("Get products by producer error:", error.response?.data || error.message);
-      throw error;
+      return handleError(error, "Get products by producer");
     }
   }
 
-  /**
-   * Get featured/best selling products
-   */
   static async getFeaturedProducts(limit: number = 8): Promise<GetProductsResponse> {
     try {
-      return await ProductAPI.getAllProducts({
-        sort: 'best-seller',
-        limitItem: limit,
-        page: 1,
-      });
+      return await ProductAPI.getProductsByCriteria({ sort: 'best-seller', limitItem: limit, page: 1 });
     } catch (error: any) {
-      console.error("Get featured products error:", error.response?.data || error.message);
-      throw error;
+      return handleError(error, "Get featured products");
     }
   }
 
-  /**
-   * Get newest products
-   */
   static async getNewestProducts(limit: number = 8): Promise<GetProductsResponse> {
     try {
-      return await ProductAPI.getAllProducts({
-        sort: 'newest',
-        limitItem: limit,
-        page: 1,
-      });
+      return await ProductAPI.getProductsByCriteria({ sort: 'newest', limitItem: limit, page: 1 });
     } catch (error: any) {
-      console.error("Get newest products error:", error.response?.data || error.message);
-      throw error;
+      return handleError(error, "Get newest products");
     }
   }
 
-  /**
-   * Get products with highest rating
-   */
   static async getTopRatedProducts(limit: number = 8): Promise<GetProductsResponse> {
     try {
-      return await ProductAPI.getAllProducts({
-        sort: 'highest-rating',
-        limitItem: limit,
-        page: 1,
-      });
+      return await ProductAPI.getProductsByCriteria({ sort: 'highest-rating', limitItem: limit, page: 1 });
     } catch (error: any) {
-      console.error("Get top rated products error:", error.response?.data || error.message);
-      throw error;
+      return handleError(error, "Get top rated products");
     }
   }
 
-  /**
-   * Check product availability for specific color and size
-   */
   static async checkProductAvailability(
     productId: string,
     color: string,
     size: string
   ): Promise<{ available: boolean; stock: number }> {
     try {
-      const product = await ProductAPI.getProductDetail(productId);
+      const product = await this.getProductDetail(productId);
       
       const variant = product.data.variants.find(v => v.color === color);
-      if (!variant) {
-        return { available: false, stock: 0 };
-      }
-
-      const sizeOption = variant.sizes.find(s => s.size === size);
-      if (!sizeOption) {
-        return { available: false, stock: 0 };
-      }
-
+      const sizeOption = variant?.sizes.find(s => s.size === size);
+      
       return {
-        available: sizeOption.stock > 0,
-        stock: sizeOption.stock,
+        available: (sizeOption?.stock ?? 0) > 0,
+        stock: sizeOption?.stock ?? 0,
       };
     } catch (error: any) {
       console.error("Check product availability error:", error.response?.data || error.message);
@@ -247,12 +214,9 @@ export class ProductAPI {
     }
   }
 
-  /**
-   * Get all available colors for a product
-   */
   static async getProductColors(productId: string): Promise<string[]> {
     try {
-      const product = await ProductAPI.getProductDetail(productId);
+      const product = await this.getProductDetail(productId);
       return product.data.variants.map(variant => variant.color);
     } catch (error: any) {
       console.error("Get product colors error:", error.response?.data || error.message);
@@ -260,21 +224,14 @@ export class ProductAPI {
     }
   }
 
-  /**
-   * Get all available sizes for a product and color
-   */
   static async getProductSizes(productId: string, color: string): Promise<string[]> {
     try {
-      const product = await ProductAPI.getProductDetail(productId);
+      const product = await this.getProductDetail(productId);
       const variant = product.data.variants.find(v => v.color === color);
       
-      if (!variant) {
-        return [];
-      }
-
-      return variant.sizes
+      return variant?.sizes
         .filter(sizeOption => sizeOption.stock > 0)
-        .map(sizeOption => sizeOption.size);
+        .map(sizeOption => sizeOption.size) ?? [];
     } catch (error: any) {
       console.error("Get product sizes error:", error.response?.data || error.message);
       return [];
@@ -282,15 +239,17 @@ export class ProductAPI {
   }
 }
 
-export const getAllProducts = ProductAPI.getAllProducts;
-export const getProductDetail = ProductAPI.getProductDetail;
-export const getTotalPages = ProductAPI.getTotalPages;
-export const searchProducts = ProductAPI.searchProducts;
-export const getProductsByType = ProductAPI.getProductsByType;
-export const getProductsByProducer = ProductAPI.getProductsByProducer;
-export const getFeaturedProducts = ProductAPI.getFeaturedProducts;
-export const getNewestProducts = ProductAPI.getNewestProducts;
-export const getTopRatedProducts = ProductAPI.getTopRatedProducts;
-export const checkProductAvailability = ProductAPI.checkProductAvailability;
-export const getProductColors = ProductAPI.getProductColors;
-export const getProductSizes = ProductAPI.getProductSizes;
+export const {
+  getAllProducts,
+  getProductDetail,
+  getTotalPages,
+  searchProducts,
+  getProductsByType,
+  getProductsByProducer,
+  getFeaturedProducts,
+  getNewestProducts,
+  getTopRatedProducts,
+  checkProductAvailability,
+  getProductColors,
+  getProductSizes,
+} = ProductAPI;

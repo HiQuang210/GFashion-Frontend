@@ -12,8 +12,8 @@ export const filterModalStyles = StyleSheet.create({
     backgroundColor: "#fff",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    height: SCREEN_HEIGHT * 0.8, 
-    flexDirection: "column", 
+    height: SCREEN_HEIGHT * 0.8,
+    flexDirection: "column",
   },
   modalHeader: {
     flexDirection: "row",
@@ -22,7 +22,7 @@ export const filterModalStyles = StyleSheet.create({
     padding: 20,
     borderBottomWidth: 1,
     borderBottomColor: "#F0F0F0",
-    flexShrink: 0, 
+    flexShrink: 0,
   },
   modalTitle: {
     fontSize: 18,
@@ -30,9 +30,9 @@ export const filterModalStyles = StyleSheet.create({
     color: "#333",
   },
   modalBody: {
-    flex: 1, // Take remaining space
+    flex: 1,
     paddingHorizontal: 20,
-    paddingTop: 10, // Reduced top padding
+    paddingTop: 10,
   },
   filterSection: {
     marginBottom: 24,
@@ -58,7 +58,8 @@ export const filterModalStyles = StyleSheet.create({
   priceInputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    justifyContent: "space-between",
+    width: "100%",
   },
   priceInput: {
     flex: 1,
@@ -68,8 +69,10 @@ export const filterModalStyles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 14,
+    maxWidth: "45%",
   },
   priceInputSeparator: {
+    marginHorizontal: 6,
     fontSize: 16,
     color: "#666",
   },
@@ -79,7 +82,7 @@ export const filterModalStyles = StyleSheet.create({
     gap: 12,
     borderTopWidth: 1,
     borderTopColor: "#F0F0F0",
-    flexShrink: 0, 
+    flexShrink: 0,
   },
   clearButton: {
     flex: 1,

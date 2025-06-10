@@ -88,13 +88,23 @@ export interface RefreshTokenResponse extends ApiResponse {
   refresh_token?: string;
 }
 
-// Cart related types
-export interface CartItem {
-  productId: string;
-  quantity: number;
-  size?: string;
-  color?: string;
+export interface CartResponse extends ApiResponse {
+  cart?: CartItem[]; 
+  data?: CartItem[]; 
+}
+
+export interface CartProduct {
+  _id: string;
+  name: string;
   price: number;
+  images: string[];
+}
+
+export interface CartItem {
+  product: CartProduct;
+  color: string;
+  size: string;
+  quantity: number;
 }
 
 export interface Cart {

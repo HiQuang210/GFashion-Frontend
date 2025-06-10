@@ -15,7 +15,6 @@ export default function Category() {
     "accessories",
     "bags",
     "hat",
-    "other"
   ];
 
   const handleCategoryPress = (category: string) => {
