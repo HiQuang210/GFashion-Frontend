@@ -1,74 +1,209 @@
-import layout from "@/styles/layout";
-import { Image, Text, TouchableOpacity, View, StyleSheet } from "react-native";
+import React, { useState, useCallback } from 'react';
+import {
+  Image,
+  Text,
+  TouchableOpacity,
+  View,
+  Modal
+} from 'react-native';
+import { router } from 'expo-router';
+import { CartItemProps } from '@/types/user';
+import { CartUtils } from '@/utils/cartHelper';
+import { styles } from '@/styles/cart/cartitem';
 
-export default function CartItem() {
-  return (
-    <View
-      style={[
-        layout.flex_row,
-        layout.gap_m,
-        {
-          borderBottomWidth: 1,
-          borderBottomColor: "#ededed",
-          paddingLeft: 20,
-          paddingTop: 10,
-          paddingBottom: 15,
-          paddingRight: 10,
-        },
-      ]}
+export default function CartItem({ data, onQuantityChange, onRemove }: CartItemProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [showRemoveModal, setShowRemoveModal] = useState(false);
+
+  const validation = React.useMemo(() => {
+    return CartUtils.validateCartItem(data);
+  }, [data]);
+
+  if (!validation.isValid) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>
+          {validation.errorMessage || 'Invalid cart item'}
+        </Text>
+      </View>
+    );
+  }
+
+  const handleQuantityUpdate = useCallback(async (newQuantity: number) => {
+    if (isLoading || !data || !onQuantityChange) return;
+
+    setIsLoading(true);
+    try {
+      await onQuantityChange(data._id, newQuantity);
+    } catch (error) {
+      console.error('Quantity update failed:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [data?._id, isLoading, onQuantityChange]);
+
+  const handleRemoveItem = useCallback(async () => {
+    if (isLoading || !data || !onRemove) return;
+
+    setIsLoading(true);
+    try {
+      await onRemove(data._id);
+      setShowRemoveModal(false);
+    } catch (error) {
+      console.error('Remove item failed:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [data?._id, isLoading, onRemove]);
+
+  const handleIncrement = useCallback(() => {
+    if (isLoading) return;
+    handleQuantityUpdate(data.quantity + 1);
+  }, [isLoading, data.quantity, handleQuantityUpdate]);
+
+  const handleDecrement = useCallback(() => {
+    if (isLoading) return;
+    
+    if (data.quantity === 1) {
+      setShowRemoveModal(true);
+    } else {
+      handleQuantityUpdate(data.quantity - 1);
+    }
+  }, [isLoading, data.quantity, handleQuantityUpdate]);
+
+  const handleNavigateToProduct = useCallback(() => {
+    if (!isLoading) {
+      router.push({ 
+        pathname: '/product/[id]', 
+        params: { id: data.product._id } 
+      });
+    }
+  }, [data.product._id, isLoading]);
+
+  const handleCloseModal = useCallback(() => {
+    setShowRemoveModal(false);
+  }, []);
+
+  const formattedPrice = React.useMemo(() => {
+    return CartUtils.formatPrice(data.product.price);
+  }, [data.product.price]);
+
+  const RemoveConfirmationModal = React.memo(() => (
+    <Modal
+      visible={showRemoveModal}
+      transparent={true}
+      animationType="fade"
+      onRequestClose={handleCloseModal}
     >
-      <Image
-        source={require("@/assets/images/221124_maverik_0_25_9335d9a2d67d4f719f342f4a533d80f1_master.webp")}
-        resizeMode="stretch"
-        style={{ width: 100, height: 100, borderRadius: 10 }}
-      />
-      <View style={[{ flex: 2, gap: 8 }]}>
-        <Text style={{ fontFamily: "Inter", fontWeight: 600, fontSize: 14 }}>
-          Brow Jacket
-        </Text>
-        <Text style={{ fontSize: 12, color: "#797979" }}>Size: XL</Text>
-        <Text style={{ fontFamily: "Inter", fontWeight: 600, fontSize: 20 }}>
-          $66
-        </Text>
-      </View>
-      <View
-        style={[
-          layout.gap_s,
-          {
-            flex: 3,
-            justifyContent: "flex-end",
-            alignItems: "flex-end",
-            flexDirection: "row",
-            height: 80,
-          },
-        ]}
-      >
-        <TouchableOpacity style={[styles.button, styles.button_minus]}>
-          <Text style={{ textAlign: "center", fontSize: 20 }}>-</Text>
-        </TouchableOpacity>
-        <Text style={{ fontSize: 19 }}>1</Text>
-        <TouchableOpacity style={[styles.button, styles.button_plus]}>
-          <Text style={{ textAlign: "center", color: "#fff", fontSize: 20 }}>
-            +
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalTitle}>Remove Item</Text>
+          <Text style={styles.modalMessage}>
+            Are you sure you want to remove this item from your cart?
           </Text>
-        </TouchableOpacity>
+          
+          <View style={styles.modalButtons}>
+            <TouchableOpacity
+              style={[styles.modalButton, styles.cancelButton]}
+              onPress={handleCloseModal}
+              disabled={isLoading}
+            >
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={[styles.modalButton, styles.removeButton]}
+              onPress={handleRemoveItem}
+              disabled={isLoading}
+            >
+              <Text style={styles.removeButtonText}>
+                {isLoading ? 'Removing...' : 'Remove'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
-    </View>
+    </Modal>
+  ));
+
+  const imageUri = data.product.images?.[0] || '';
+
+  return (
+    <>
+      <TouchableOpacity
+        style={styles.container}
+        onPress={handleNavigateToProduct}
+        disabled={isLoading}
+        activeOpacity={0.7}
+      >
+        <View style={styles.itemContainer}>
+          {/* Product Image */}
+          <View style={styles.imageContainer}>
+            <Image
+              source={{ uri: imageUri }}
+              resizeMode="cover"
+              style={styles.productImage}
+              defaultSource={require('@/assets/images/corrugated-box.jpg')}
+            />
+          </View>
+
+          {/* Product Details */}
+          <View style={styles.productDetails}>
+            <Text numberOfLines={2} style={styles.productName}>
+              {data.product.name}
+            </Text>
+            
+            <Text style={styles.productVariant}>
+              Color: {data.color} • Size: {data.size}
+            </Text>
+            
+            <View style={styles.priceContainer}>
+              <Text style={styles.productPrice}>{formattedPrice}</Text>
+            </View>
+          </View>
+
+          {/* Quantity Controls */}
+          <View style={styles.quantityContainer}>
+            <TouchableOpacity
+              style={[
+                styles.quantityButton,
+                styles.decrementButton,
+                isLoading && styles.disabledButton
+              ]}
+              onPress={handleDecrement}
+              disabled={isLoading}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.decrementButtonText}>-</Text>
+            </TouchableOpacity>
+            
+            <Text style={styles.quantityText}>
+              {data.quantity}
+            </Text>
+            
+            <TouchableOpacity
+              style={[
+                styles.quantityButton,
+                styles.incrementButton,
+                isLoading && styles.disabledButton
+              ]}
+              onPress={handleIncrement}
+              disabled={isLoading}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.incrementButtonText}>+</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Loading overlay */}
+        {isLoading && (
+          <View style={styles.loadingOverlay}>
+            <Text style={styles.loadingText}>Updating...</Text>
+          </View>
+        )}
+      </TouchableOpacity>
+      <RemoveConfirmationModal />
+    </>
   );
 }
-
-const styles = StyleSheet.create({
-  button: {
-    width: 30,
-    height: 30,
-    borderRadius: 5,
-  },
-  button_plus: {
-    backgroundColor: "#704F38",
-  },
-  button_minus: {
-    backgroundColor: "#ededed",
-    borderWidth: 1,
-    borderColor: "#ededed",
-  },
-});

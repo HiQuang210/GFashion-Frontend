@@ -7,7 +7,6 @@ import {
   ActivityIndicator,
 } from "react-native";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import Toast from "react-native-toast-message";
 import { Product, ProductVariant } from "@/types/product";
 import { useCart } from "@/hooks/useCart";
 import { styles } from "@/styles/quantitypicker";
@@ -19,6 +18,7 @@ interface QuantityPickerModalProps {
   currentVariant: ProductVariant;
   selectedSize: string;
   onAddToCart?: () => void;
+  onError?: (errorMessage: string) => void;
 }
 
 export default function QuantityPicker({
@@ -28,6 +28,7 @@ export default function QuantityPicker({
   currentVariant,
   selectedSize,
   onAddToCart,
+  onError,
 }: QuantityPickerModalProps) {
   const {
     quantity,
@@ -59,10 +60,23 @@ export default function QuantityPicker({
   }, [visible, currentVariant?.color, selectedSize, resetQuantity, clearMessages]);
 
   const handleAddToCart = async () => {
-    const success = await addToCart();
-    if (success) {
-      onAddToCart?.();
-      onClose();
+    try {
+      const success = await addToCart();
+      if (success) {
+        onAddToCart?.();
+        onClose();
+      } else {
+        // If addToCart returns false, there should be an errorMessage
+        if (errorMessage) {
+          onError?.(errorMessage);
+        } else {
+          onError?.("Failed to add item to cart");
+        }
+      }
+    } catch (error) {
+      // Handle any unexpected errors
+      const errorMsg = error instanceof Error ? error.message : "An unexpected error occurred";
+      onError?.(errorMsg);
     }
   };
 
@@ -176,7 +190,6 @@ export default function QuantityPicker({
                   />
                 </TouchableOpacity>
               </View>
-
             </View>
           )}
 
@@ -234,12 +247,7 @@ export default function QuantityPicker({
               )}
             </TouchableOpacity>
           </View>
-
-
         </View>
-        
-        {/* Toast component inside modal to ensure it appears on top */}
-        <Toast />
       </View>
     </Modal>
   );

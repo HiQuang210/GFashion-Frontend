@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { View, ScrollView, ActivityIndicator, Text } from "react-native";
 import { useLocalSearchParams } from "expo-router";
-
+import Toast from "react-native-toast-message";
 import { useProductDetail } from "@/hooks/useProduct";
 import { Product } from "@/types/product";
-
 import ProductHeader from "@/components/productdetail/Header";
 import ProductImageGallery from "@/components/productdetail/ImageGallery";
 import ProductInfo from "@/components/productdetail/Info";
@@ -64,9 +63,30 @@ export default function ProductDetail() {
   };
 
   const handleCartUpdate = () => {
-    // Optionally refetch product data to get updated stock
-    // refetch();
     console.log("Cart updated successfully");
+    // Show success toast when item is added to cart
+    Toast.show({
+      type: 'success',
+      text1: 'Added to Cart',
+      text2: 'Item has been successfully added to your cart',
+      position: 'top',
+      visibilityTime: 3000,
+      autoHide: true,
+      topOffset: 60,
+    });
+  };
+
+  const handleCartError = (errorMessage: string) => {
+    // Show error toast when adding to cart fails
+    Toast.show({
+      type: 'error',
+      text1: 'Error',
+      text2: errorMessage || 'Failed to add item to cart',
+      position: 'top',
+      visibilityTime: 4000,
+      autoHide: true,
+      topOffset: 60,
+    });
   };
 
   return (
@@ -108,7 +128,10 @@ export default function ProductDetail() {
         currentVariant={currentVariant}
         selectedSize={selectedSize}
         onCartUpdate={handleCartUpdate}
+        onCartError={handleCartError}
       />
+      {/* Toast component - positioned at the top level to be visible over modals */}
+      <Toast />
     </View>
   );
 }

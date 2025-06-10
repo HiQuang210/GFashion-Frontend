@@ -25,8 +25,7 @@ const ITEMS_PER_PAGE = 8;
 export default function WishlistPage() {
   const { userInfo } = useAuth();
   const queryClient = useQueryClient();
-  const { favorites } = useFavorites(); // Get current favorites list
-  const { refreshWishlist } = useWishlistRealtime(); // Real-time updates
+  const { favorites } = useFavorites(); 
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(0);
 
@@ -37,7 +36,6 @@ export default function WishlistPage() {
       if (!userInfo?._id) return [];
       
       const response = await getUserFavoriteProducts();
-      console.log('Favorite products response:', response.data); // Debug log
       return response.data || [];
     },
     enabled: !!userInfo?._id,
@@ -60,15 +58,12 @@ export default function WishlistPage() {
     }
   }, [favorites, favoriteProducts.length, userInfo?._id, refetch]);
 
-  // Filter favoriteProducts to only show items that are still in favorites
-  // This provides immediate UI update while waiting for refetch
   const syncedFavoriteProducts = useMemo(() => {
     return favoriteProducts.filter((product: Product) => 
       favorites.includes(product._id)
     );
   }, [favoriteProducts, favorites]);
 
-  // Filter products based on search query
   const filteredProducts = useMemo(() => {
     if (!searchQuery.trim()) return syncedFavoriteProducts;
     
@@ -77,15 +72,12 @@ export default function WishlistPage() {
       product.description?.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [syncedFavoriteProducts, searchQuery]);
-
-  // Pagination logic
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
   const paginatedProducts = useMemo(() => {
     const startIndex = currentPage * ITEMS_PER_PAGE;
     return filteredProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [filteredProducts, currentPage]);
 
-  // Reset page when search changes
   React.useEffect(() => {
     setCurrentPage(0);
   }, [searchQuery]);
@@ -94,17 +86,13 @@ export default function WishlistPage() {
     setCurrentPage(page);
   };
 
-  // Handle when a product is removed from favorites
   const handleFavoriteChange = (productId: string, isFavorite: boolean) => {
-    // The useFavorites hook will handle the optimistic update
-    // We just need to invalidate queries to ensure data consistency
     queryClient.invalidateQueries({ queryKey: ['favoriteProducts', userInfo?._id] });
     queryClient.invalidateQueries({ queryKey: ['userFavorites', userInfo?._id] });
     
-    // Optionally refetch immediately for real-time update
     setTimeout(() => {
       refetch();
-    }, 500); // Small delay to allow backend to process
+    }, 500);
   };
 
   const renderProductItem = ({ item }: { item: Product }) => (

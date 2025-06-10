@@ -32,7 +32,6 @@ axiosClient.interceptors.request.use(
 
 axiosClient.interceptors.response.use(
   (response: AxiosResponse) => {
-    console.log(`📥 ${response.status} ${response.config.url}`);
     return response;
   },
   async (error) => {

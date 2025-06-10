@@ -8,7 +8,6 @@ import {
   ImageSourcePropType,
   TouchableOpacity,
 } from "react-native";
-import Feather from "@expo/vector-icons/Feather";
 
 type InputProps = {
   content: string;
