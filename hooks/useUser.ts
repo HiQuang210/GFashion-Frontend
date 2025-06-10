@@ -3,8 +3,6 @@ import { getUserDetail } from "@/api/services/UserService";
 import { UserDetailResponse } from "@/types/user";
 
 export function useUser(id: string | undefined) {
-  console.log("useUser - id:", id);
-  
   const {
     isLoading,
     data: user,

@@ -78,13 +78,13 @@ const SwipeTabLayout = () => {
     <TabNavigationProvider value={{ navigateToTab }}>
       <View style={{ flex: 1 }}>
         <TabView
-          navigationState={{ index, routes }}
-          renderScene={renderScene}
-          onIndexChange={setIndex}
-          initialLayout={{ width: layout.width }}
-          renderTabBar={() => null}
-          swipeEnabled={true}
-        />
+        navigationState={{ index, routes }}
+        renderScene={renderScene}
+        onIndexChange={setIndex}
+        initialLayout={{ width: layout.width }}
+        renderTabBar={() => null}
+        swipeEnabled={routes[index].key !== 'cart'} 
+      />
         {renderTabBar()}
       </View>
     </TabNavigationProvider>

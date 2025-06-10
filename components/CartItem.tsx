@@ -1,40 +1,43 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
+  Animated,
   Image,
   Text,
   TouchableOpacity,
   View,
-  Modal
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { CartItemProps } from '@/types/user';
 import { CartUtils } from '@/utils/cartHelper';
+import RemoveConfirmationModal from '@/components/RemoveConfirmation';
+import { useSwipeToDelete } from '@/hooks/useItemSwipe';
 import { styles } from '@/styles/cart/cartitem';
+import { CartItemProps } from '@/types/user';
 
 export default function CartItem({ data, onQuantityChange, onRemove }: CartItemProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showRemoveModal, setShowRemoveModal] = useState(false);
+  const validation = useMemo(() => CartUtils.validateCartItem(data), [data]);
+  const formattedPrice = useMemo(() => CartUtils.formatPrice(data.product.price), [data.product.price]);
+  const imageUri = data.product.images?.[0] || '';
 
-  const validation = React.useMemo(() => {
-    return CartUtils.validateCartItem(data);
-  }, [data]);
-
-  if (!validation.isValid) {
-    return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>
-          {validation.errorMessage || 'Invalid cart item'}
-        </Text>
-      </View>
-    );
-  }
+  const {
+    translateX,
+    panResponder,
+    isSwipeActive,
+    resetSwipePosition,
+    handleDeletePress,
+  } = useSwipeToDelete({
+    onDelete: () => setShowRemoveModal(true),
+    disabled: isLoading,
+  });
 
   const handleQuantityUpdate = useCallback(async (newQuantity: number) => {
-    if (isLoading || !data || !onQuantityChange) return;
-
+    if (isLoading || !data) return;
+    
     setIsLoading(true);
     try {
-      await onQuantityChange(data._id, newQuantity);
+      await onQuantityChange?.(data._id, newQuantity);
     } catch (error) {
       console.error('Quantity update failed:', error);
     } finally {
@@ -42,23 +45,10 @@ export default function CartItem({ data, onQuantityChange, onRemove }: CartItemP
     }
   }, [data?._id, isLoading, onQuantityChange]);
 
-  const handleRemoveItem = useCallback(async () => {
-    if (isLoading || !data || !onRemove) return;
-
-    setIsLoading(true);
-    try {
-      await onRemove(data._id);
-      setShowRemoveModal(false);
-    } catch (error) {
-      console.error('Remove item failed:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [data?._id, isLoading, onRemove]);
-
   const handleIncrement = useCallback(() => {
-    if (isLoading) return;
-    handleQuantityUpdate(data.quantity + 1);
+    if (!isLoading) {
+      handleQuantityUpdate(data.quantity + 1);
+    }
   }, [isLoading, data.quantity, handleQuantityUpdate]);
 
   const handleDecrement = useCallback(() => {
@@ -71,139 +61,152 @@ export default function CartItem({ data, onQuantityChange, onRemove }: CartItemP
     }
   }, [isLoading, data.quantity, handleQuantityUpdate]);
 
-  const handleNavigateToProduct = useCallback(() => {
-    if (!isLoading) {
-      router.push({ 
-        pathname: '/product/[id]', 
-        params: { id: data.product._id } 
-      });
+  const handleRemoveItem = useCallback(async () => {
+    if (isLoading || !data) return;
+    
+    setIsLoading(true);
+    try {
+      await onRemove?.(data._id);
+      setShowRemoveModal(false);
+    } catch (error) {
+      console.error('Remove item failed:', error);
+    } finally {
+      setIsLoading(false);
     }
-  }, [data.product._id, isLoading]);
+  }, [data?._id, isLoading, onRemove]);
 
   const handleCloseModal = useCallback(() => {
     setShowRemoveModal(false);
   }, []);
 
-  const formattedPrice = React.useMemo(() => {
-    return CartUtils.formatPrice(data.product.price);
-  }, [data.product.price]);
+  const handleNavigateToProduct = useCallback(() => {
+    if (!isLoading && !isSwipeActive && (translateX as any).__getValue() === 0) {
+      router.push({ 
+        pathname: '/product/[id]', 
+        params: { id: data.product._id } 
+      });
+    }
+  }, [data.product._id, isLoading, isSwipeActive, translateX]);
 
-  const RemoveConfirmationModal = React.memo(() => (
-    <Modal
-      visible={showRemoveModal}
-      transparent={true}
-      animationType="fade"
-      onRequestClose={handleCloseModal}
-    >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContainer}>
-          <Text style={styles.modalTitle}>Remove Item</Text>
-          <Text style={styles.modalMessage}>
-            Are you sure you want to remove this item from your cart?
-          </Text>
-          
-          <View style={styles.modalButtons}>
-            <TouchableOpacity
-              style={[styles.modalButton, styles.cancelButton]}
-              onPress={handleCloseModal}
-              disabled={isLoading}
-            >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={[styles.modalButton, styles.removeButton]}
-              onPress={handleRemoveItem}
-              disabled={isLoading}
-            >
-              <Text style={styles.removeButtonText}>
-                {isLoading ? 'Removing...' : 'Remove'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+  if (!validation.isValid) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>
+          {validation.errorMessage || 'Invalid cart item'}
+        </Text>
       </View>
-    </Modal>
-  ));
+    );
+  }
 
-  const imageUri = data.product.images?.[0] || '';
+  const isInteractionDisabled = isLoading || isSwipeActive;
 
   return (
     <>
-      <TouchableOpacity
-        style={styles.container}
-        onPress={handleNavigateToProduct}
-        disabled={isLoading}
-        activeOpacity={0.7}
-      >
-        <View style={styles.itemContainer}>
-          {/* Product Image */}
-          <View style={styles.imageContainer}>
-            <Image
-              source={{ uri: imageUri }}
-              resizeMode="cover"
-              style={styles.productImage}
-              defaultSource={require('@/assets/images/corrugated-box.jpg')}
-            />
-          </View>
-
-          {/* Product Details */}
-          <View style={styles.productDetails}>
-            <Text numberOfLines={2} style={styles.productName}>
-              {data.product.name}
-            </Text>
-            
-            <Text style={styles.productVariant}>
-              Color: {data.color} • Size: {data.size}
-            </Text>
-            
-            <View style={styles.priceContainer}>
-              <Text style={styles.productPrice}>{formattedPrice}</Text>
-            </View>
-          </View>
-
-          {/* Quantity Controls */}
-          <View style={styles.quantityContainer}>
-            <TouchableOpacity
-              style={[
-                styles.quantityButton,
-                styles.decrementButton,
-                isLoading && styles.disabledButton
-              ]}
-              onPress={handleDecrement}
-              disabled={isLoading}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.decrementButtonText}>-</Text>
-            </TouchableOpacity>
-            
-            <Text style={styles.quantityText}>
-              {data.quantity}
-            </Text>
-            
-            <TouchableOpacity
-              style={[
-                styles.quantityButton,
-                styles.incrementButton,
-                isLoading && styles.disabledButton
-              ]}
-              onPress={handleIncrement}
-              disabled={isLoading}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.incrementButtonText}>+</Text>
-            </TouchableOpacity>
-          </View>
+      <View style={styles.swipeContainer}>
+        {/* Delete Area */}
+        <View style={styles.deleteArea}>
+          <TouchableOpacity 
+            style={styles.deleteButton} 
+            onPress={handleDeletePress}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="trash" size={24} color="#fff" />
+            <Text style={styles.deleteButtonText}>Delete</Text>
+          </TouchableOpacity>
         </View>
 
-        {/* Loading overlay */}
-        {isLoading && (
-          <View style={styles.loadingOverlay}>
-            <Text style={styles.loadingText}>Updating...</Text>
-          </View>
-        )}
-      </TouchableOpacity>
-      <RemoveConfirmationModal />
+        {/* Main Item Container */}
+        <Animated.View
+          style={[styles.container, { transform: [{ translateX }] }]}
+          {...panResponder.panHandlers}
+        >
+          {/* Swipe Overlay */}
+          {isSwipeActive && (
+            <TouchableOpacity 
+              style={styles.swipeOverlay} 
+              onPress={resetSwipePosition}
+              activeOpacity={1} 
+            />
+          )}
+
+          {/* Item Content */}
+          <TouchableOpacity
+            style={styles.itemContainer}
+            onPress={handleNavigateToProduct}
+            disabled={isInteractionDisabled}
+            activeOpacity={0.7}
+          >
+            {/* Product Image */}
+            <View style={styles.imageContainer}>
+              <Image
+                source={{ uri: imageUri }}
+                resizeMode="cover"
+                style={styles.productImage}
+                defaultSource={require('@/assets/images/corrugated-box.jpg')}
+              />
+            </View>
+
+            {/* Product Details */}
+            <View style={styles.productDetails}>
+              <Text numberOfLines={2} style={styles.productName}>
+                {data.product.name}
+              </Text>
+              <Text style={styles.productVariant}>
+                Color: {data.color} • Size: {data.size}
+              </Text>
+              <View style={styles.priceContainer}>
+                <Text style={styles.productPrice}>{formattedPrice}</Text>
+              </View>
+            </View>
+
+            {/* Quantity Controls */}
+            <View style={styles.quantityContainer}>
+              <TouchableOpacity
+                style={[
+                  styles.quantityButton,
+                  styles.decrementButton,
+                  isInteractionDisabled && styles.disabledButton,
+                ]}
+                onPress={handleDecrement}
+                disabled={isInteractionDisabled}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.decrementButtonText}>-</Text>
+              </TouchableOpacity>
+
+              <Text style={styles.quantityText}>{data.quantity}</Text>
+
+              <TouchableOpacity
+                style={[
+                  styles.quantityButton,
+                  styles.incrementButton,
+                  isInteractionDisabled && styles.disabledButton,
+                ]}
+                onPress={handleIncrement}
+                disabled={isInteractionDisabled}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.incrementButtonText}>+</Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+
+          {/* Loading Overlay */}
+          {isLoading && (
+            <View style={styles.loadingOverlay}>
+              <Text style={styles.loadingText}>Updating...</Text>
+            </View>
+          )}
+        </Animated.View>
+      </View>
+
+      {/* Remove Confirmation Modal */}
+      <RemoveConfirmationModal
+        visible={showRemoveModal}
+        onCancel={handleCloseModal}
+        onConfirm={handleRemoveItem}
+        isLoading={isLoading}
+      />
     </>
   );
 }

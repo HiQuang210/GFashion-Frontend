@@ -12,6 +12,7 @@ interface ProductBottomBarProps {
   currentVariant: ProductVariant;
   selectedSize: string;
   onCartUpdate?: () => void;
+  onCartError?: (errorMessage: string) => void;
 }
 
 export default function ProductBottomBar({ 
@@ -20,7 +21,8 @@ export default function ProductBottomBar({
   product, 
   currentVariant, 
   selectedSize,
-  onCartUpdate 
+  onCartUpdate,
+  onCartError
 }: ProductBottomBarProps) {
   const [showQuantityModal, setShowQuantityModal] = useState(false);
 
@@ -39,6 +41,11 @@ export default function ProductBottomBar({
 
   const handleCartUpdate = () => {
     onCartUpdate?.();
+    setShowQuantityModal(false);
+  };
+
+  const handleCartError = (errorMessage: string) => {
+    onCartError?.(errorMessage);
     setShowQuantityModal(false);
   };
 
@@ -111,6 +118,7 @@ export default function ProductBottomBar({
         currentVariant={currentVariant}
         selectedSize={selectedSize}
         onAddToCart={handleCartUpdate}
+        onError={handleCartError}
       />
     </>
   );

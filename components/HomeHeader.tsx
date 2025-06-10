@@ -13,7 +13,6 @@ export default function HomeHeader() {
   useEffect(() => {
     AsyncStorage.getItem("userId")
       .then((id) => {
-        console.log("User ID:", id);
         setUserId(id || undefined);
       })
       .catch((err) => console.error("AsyncStorage error:", err));
@@ -40,7 +39,7 @@ export default function HomeHeader() {
                 : require("@/assets/images/default-avatar.png")
             }
             style={styles.avatar}
-            onError={(e) => console.log("Lỗi load ảnh:", e.nativeEvent.error)}
+            onError={(e) => console.log("Image rendering error:", e.nativeEvent.error)}
           />
           <View style={styles.textContainer}>
             <Text style={styles.sub_title_text}>Welcome back,</Text>
