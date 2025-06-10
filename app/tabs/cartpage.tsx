@@ -13,6 +13,7 @@ import { UserAPI } from '@/api/services/UserService';
 import { CartItemData } from '@/types/user';
 import { CartUtils } from '@/utils/cartHelper';
 import { useToast } from '@/hooks/useToast';
+import { useTabNavigation } from '@/contexts/TabNavigation'; // Add this import
 import CartItem from '@/components/CartItem';
 import text from '@/styles/text';
 import { styles } from '@/styles/cart/cartpage';
@@ -21,6 +22,7 @@ export default function CartPage() {
   const { userInfo } = useAuth();
   const queryClient = useQueryClient();
   const { showErrorToast, showSuccessToast } = useToast();
+  const { refreshCartCount } = useTabNavigation(); // Add this hook
 
   const { data: cartItems = [], isLoading, refetch, error } = useQuery<CartItemData[]>({
     queryKey: ['userCart', userInfo?._id],
@@ -58,6 +60,8 @@ export default function CartPage() {
   const handleCartUpdate = React.useCallback(async (itemId: string, newQuantity: number) => {
     const item = cartItems.find(item => item._id === itemId);
     if (!item) return;
+
+    // Optimistic update
     queryClient.setQueryData<CartItemData[]>(['userCart', userInfo?._id], (oldData) => {
       if (!oldData) return [];
       return oldData.map(cartItem => 
@@ -79,6 +83,8 @@ export default function CartPage() {
         if (response.cart) {
           queryClient.setQueryData<CartItemData[]>(['userCart', userInfo?._id], response.cart);
         }
+        // Update cart badge count after successful update
+        await refreshCartCount();
         showSuccessToast('Updated', 'Cart updated successfully');
       } else {
         queryClient.invalidateQueries({ 
@@ -93,12 +99,13 @@ export default function CartPage() {
       const errorMessage = CartUtils.getErrorMessage(error, 'Failed to update cart');
       showErrorToast('Error', errorMessage);
     }
-  }, [cartItems, queryClient, userInfo?._id, showErrorToast, showSuccessToast]);
+  }, [cartItems, queryClient, userInfo?._id, showErrorToast, showSuccessToast, refreshCartCount]);
 
   const handleCartRemove = React.useCallback(async (itemId: string) => {
     const item = cartItems.find(item => item._id === itemId);
     if (!item) return;
 
+    // Optimistic update
     queryClient.setQueryData<CartItemData[]>(['userCart', userInfo?._id], (oldData) => {
       if (!oldData) return [];
       return oldData.filter(cartItem => cartItem._id !== itemId);
@@ -115,6 +122,8 @@ export default function CartPage() {
         if (response.cart) {
           queryClient.setQueryData<CartItemData[]>(['userCart', userInfo?._id], response.cart);
         }
+        // Update cart badge count after successful removal
+        await refreshCartCount();
         showSuccessToast('Removed', 'Item removed from cart');
       } else {
         queryClient.invalidateQueries({ 
@@ -129,7 +138,7 @@ export default function CartPage() {
       const errorMessage = CartUtils.getErrorMessage(error, 'Failed to remove item');
       showErrorToast('Error', errorMessage);
     }
-  }, [cartItems, queryClient, userInfo?._id, showErrorToast, showSuccessToast]);
+  }, [cartItems, queryClient, userInfo?._id, showErrorToast, showSuccessToast, refreshCartCount]);
 
   const cartSummary = React.useMemo(() => {
     return CartUtils.getCartSummary(cartItems);

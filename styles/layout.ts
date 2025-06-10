@@ -78,6 +78,58 @@ const layout = StyleSheet.create({
   margin_bottom_s: {
     marginBottom: 20,
   },
+
+  tabBarContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    position: "absolute",
+    bottom: 25,
+    marginHorizontal: 20,
+    height: 60,
+    borderRadius: 25,
+    backgroundColor: "#C4A484", 
+    overflow: "hidden",
+    left: 0,
+    right: 0,
+  },
+
+  tabItemWrapper: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  iconWrapper: {
+    borderRadius: 50,
+    alignItems: "center",
+    justifyContent: "center",
+    width: 50,
+    height: 50,
+    position: "relative",
+  },
+
+  badgeContainer: {
+    position: "absolute",
+    top: -2,
+    right: -2,
+    backgroundColor: "#704F38",
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 4,
+    borderWidth: 2,
+    borderColor: "#fff",
+  },
+  
+  badgeText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
 });
 
 export default layout;

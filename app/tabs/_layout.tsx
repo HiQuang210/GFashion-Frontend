@@ -1,9 +1,12 @@
-import React, { useState } from "react";
-import { View, useWindowDimensions, StyleSheet, TouchableOpacity } from "react-native";
+import React, { useState, useEffect, useCallback } from "react";
+import { View, useWindowDimensions, StyleSheet, TouchableOpacity, Text } from "react-native";
 import { TabView, SceneMap } from "react-native-tab-view";
 import Feather from "@expo/vector-icons/Feather";
 import { TabNavigationProvider } from "@/contexts/TabNavigation";
-
+import { UserAPI } from "@/api/services/UserService";
+import { CartUtils } from "@/utils/cartHelper";
+import { CartItemData } from "@/types/user";
+import styles from "@/styles/layout";
 import Homepage from "./homepage";
 import SearchPage from "./searchpage";
 import WishlistPage from "./wishlistpage";
@@ -19,6 +22,7 @@ type Route = {
 const SwipeTabLayout = () => {
   const layout = useWindowDimensions();
   const [index, setIndex] = useState(0);
+  const [cartItemCount, setCartItemCount] = useState(0);
 
   const routes: Route[] = [
     { key: "home", title: "Home", icon: "home" },
@@ -27,6 +31,32 @@ const SwipeTabLayout = () => {
     { key: "cart", title: "Cart", icon: "shopping-cart" },
     { key: "profile", title: "Profile", icon: "user" },
   ];
+
+  const fetchCartItemCount = useCallback(async () => {
+    try {
+      const response = await UserAPI.getUserCart();
+      if (response.status === "OK" && response.data) {
+        const cartItems = response.data as CartItemData[];
+        const totalItems = CartUtils.calculateTotalItems(cartItems);
+        setCartItemCount(totalItems);
+      } else {
+        setCartItemCount(0);
+      }
+    } catch (error) {
+      console.error("Error fetching cart count:", error);
+      setCartItemCount(0);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchCartItemCount();
+  }, [fetchCartItemCount]);
+
+  useEffect(() => {
+    if (routes[index].key === 'cart') {
+      fetchCartItemCount();
+    }
+  }, [index, fetchCartItemCount]);
 
   const navigateToTab = (tabKey: string) => {
     const tabIndex = routes.findIndex(route => route.key === tabKey);
@@ -48,6 +78,9 @@ const SwipeTabLayout = () => {
       <View style={styles.tabBarContainer}>
         {routes.map((route, i: number) => {
           const focused = index === i;
+          const isCartTab = route.key === 'cart';
+          const showBadge = isCartTab && cartItemCount > 0;
+          
           return (
             <TouchableOpacity
               key={route.key}
@@ -66,6 +99,13 @@ const SwipeTabLayout = () => {
                   size={24}
                   color={focused ? "#704F38" : "#fff"}
                 />
+                {showBadge && (
+                  <View style={styles.badgeContainer}>
+                    <Text style={styles.badgeText}>
+                      {cartItemCount > 99 ? '99+' : cartItemCount.toString()}
+                    </Text>
+                  </View>
+                )}
               </View>
             </TouchableOpacity>
           );
@@ -75,49 +115,20 @@ const SwipeTabLayout = () => {
   };
 
   return (
-    <TabNavigationProvider value={{ navigateToTab }}>
+    <TabNavigationProvider value={{ navigateToTab, refreshCartCount: fetchCartItemCount }}>
       <View style={{ flex: 1 }}>
         <TabView
-        navigationState={{ index, routes }}
-        renderScene={renderScene}
-        onIndexChange={setIndex}
-        initialLayout={{ width: layout.width }}
-        renderTabBar={() => null}
-        swipeEnabled={routes[index].key !== 'cart'} 
-      />
+          navigationState={{ index, routes }}
+          renderScene={renderScene}
+          onIndexChange={setIndex}
+          initialLayout={{ width: layout.width }}
+          renderTabBar={() => null}
+          swipeEnabled={routes[index].key !== 'cart'} 
+        />
         {renderTabBar()}
       </View>
     </TabNavigationProvider>
   );
 };
-
-const styles = StyleSheet.create({
-  tabBarContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    position: "absolute",
-    bottom: 25,
-    marginHorizontal: 20,
-    height: 60,
-    borderRadius: 25,
-    backgroundColor: "#C4A484", 
-    overflow: "hidden",
-    left: 0,
-    right: 0,
-  },
-  tabItemWrapper: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  iconWrapper: {
-    borderRadius: 50,
-    alignItems: "center",
-    justifyContent: "center",
-    width: 50,
-    height: 50,
-  },
-});
 
 export default SwipeTabLayout;

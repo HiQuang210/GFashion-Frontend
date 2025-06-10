@@ -1,20 +1,27 @@
-import { createContext, useContext } from "react";
+import React, { createContext, useContext } from 'react';
 
-type TabNavigationContextType = {
+interface TabNavigationContextType {
   navigateToTab: (tabKey: string) => void;
+  refreshCartCount: () => Promise<void>;
+}
+
+const TabNavigationContext = createContext<TabNavigationContextType | undefined>(undefined);
+
+export const TabNavigationProvider: React.FC<{
+  value: TabNavigationContextType;
+  children: React.ReactNode;
+}> = ({ value, children }) => {
+  return (
+    <TabNavigationContext.Provider value={value}>
+      {children}
+    </TabNavigationContext.Provider>
+  );
 };
 
-const TabNavigationContext = createContext<TabNavigationContextType>({
-  navigateToTab: () => {},
-});
-
-export const useTabNavigation = () => {
+export const useTabNavigation = (): TabNavigationContextType => {
   const context = useContext(TabNavigationContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useTabNavigation must be used within a TabNavigationProvider');
   }
   return context;
 };
-
-export const TabNavigationProvider = TabNavigationContext.Provider;
-export default TabNavigationContext;

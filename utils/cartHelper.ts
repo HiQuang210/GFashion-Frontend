@@ -14,6 +14,10 @@ export class CartUtils {
     }, 0);
   }
 
+  static calculateUniqueItemCount(cartItems: CartItemData[]): number {
+    return cartItems.length;
+  }
+
   static findCartItem(
     cartItems: CartItemData[], 
     productId: string, 
@@ -167,6 +171,42 @@ export class CartUtils {
     }
   }
 
+  static async performCartOperation(
+    operation: 'add' | 'update' | 'remove',
+    productId: string,
+    color: string,
+    size: string,
+    quantity: number,
+    onSuccess?: () => Promise<void>
+  ): Promise<ApiResponse> {
+    try {
+      let response: ApiResponse;
+      
+      switch (operation) {
+        case 'add':
+          response = await CartUtils.addToCart(productId, color, size, quantity);
+          break;
+        case 'update':
+          response = await CartUtils.updateCartItemQuantity(productId, color, size, quantity);
+          break;
+        case 'remove':
+          response = await CartUtils.removeCartItem(productId, color, size);
+          break;
+        default:
+          throw new Error('Invalid cart operation');
+      }
+
+      if (response.status === 'OK' && onSuccess) {
+        await onSuccess();
+      }
+
+      return response;
+    } catch (error: any) {
+      console.error(`Cart ${operation} operation error:`, error);
+      throw error;
+    }
+  }
+
   static formatPrice(price: number): string {
     return `${price.toLocaleString('vi-VN')}đ`;
   }
@@ -215,9 +255,11 @@ export class CartUtils {
     const totalItems = CartUtils.calculateTotalItems(cartItems);
     const totalPrice = CartUtils.calculateTotalPrice(cartItems);
     const itemCount = cartItems.length;
+    const uniqueItemCount = CartUtils.calculateUniqueItemCount(cartItems);
 
     return {
       itemCount,
+      uniqueItemCount, 
       totalItems,
       totalPrice,
       formattedPrice: CartUtils.formatPrice(totalPrice),
