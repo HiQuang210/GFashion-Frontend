@@ -1,15 +1,23 @@
-import Input from "@/components/Input";
-import PageHeader from "@/components/PageHeader";
-import { useUser } from "@/hooks/useUser";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useState, useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
-import { Text, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useUpdateUser } from "@/hooks/useUpdateUser";
-import link from "@/styles/link";
-import text from "@/styles/text";
+import { useForm, Controller } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+import { useUser } from "@/hooks/useUser";
+import { useUpdateUser } from "@/hooks/useUpdateUser";
+import { useToast } from "@/hooks/useToast";
+
+import Input from "@/components/Input";
+import CustomButton from "@/components/CustomButton";
+import BackButton from "@/components/BackButton";
 
 interface FormData {
   phone: string;
@@ -18,22 +26,24 @@ interface FormData {
 }
 
 export default function ChangeInfo() {
-  const { formState, getValues, handleSubmit, reset, control } =
-    useForm<FormData>();
-  const { errors } = formState;
-  const [userId, setUserId] = useState<string | null>(null);
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<FormData>();
+  const [userId, setUserId] = useState<string | undefined>(undefined);
   const queryClient = useQueryClient();
+  const { showSuccessToast, showErrorToast } = useToast();
+
   useEffect(() => {
     AsyncStorage.getItem("userId")
-      .then((id) => {
-        console.log("User ID:", id);
-        setUserId(id);
-      })
+      .then((id) => setUserId(id ?? undefined))
       .catch((err) => console.error("AsyncStorage error:", err));
   }, []);
 
-  const { user, isLoading } = useUser(userId);
-  const { mutate: updateUser, isPending } = useUpdateUser();
+  const { user, isLoading: isUserLoading } = useUser(userId);
+  const { mutate: updateUser, isPending: isUpdating } = useUpdateUser();
 
   useEffect(() => {
     if (user?.data) {
@@ -46,36 +56,54 @@ export default function ChangeInfo() {
   }, [user, reset]);
 
   const onSubmit = (data: FormData) => {
+    if (!userId) return;
+
     updateUser({ id: userId, data } as any, {
       onSuccess: () => {
-        if (userId) {
-          queryClient.invalidateQueries({ queryKey: ["user", userId] });
-        }
-        alert("Cập nhật thành công!");
+        queryClient.invalidateQueries({ queryKey: ["user", userId] });
+        showSuccessToast(
+          "Information Updated!",
+          "Your profile has been saved."
+        );
       },
       onError: (error: any) => {
-        alert("Lỗi khi cập nhật: " + error.message);
+        showErrorToast("Update Failed", error.message || "An error occurred.");
       },
     });
   };
 
-  if (!userId || isLoading) {
-    return <Text>loading...</Text>;
+  if (isUserLoading) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#704F38" />
+      </View>
+    );
   }
+
   return (
-    <SafeAreaView style={{ marginHorizontal: 20 }}>
-      <PageHeader content="Information" />
-      <View>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <BackButton />
+        <Text style={styles.headerTitle}>Edit Profile</Text>
+        <View style={{ width: 40 }} />
+      </View>
+
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+      >
         <Input
           label="Email"
           placeholder="example@gmail.com"
           keyboardType="email-address"
           inputMode="email"
           secureTextEntry={false}
-          value={user.data.email}
+          value={user?.data?.email || ""}
+          onChangeText={() => {}}
+          editable={false}
         />
 
-        <View style={{ display: "flex", flexDirection: "row", gap: 15 }}>
+        <View style={styles.nameContainer}>
           {/* Name */}
           <Controller
             control={control}
@@ -92,7 +120,7 @@ export default function ChangeInfo() {
                 onChangeText={onChange}
                 value={value}
                 error={errors.firstName?.message}
-                width={160}
+                containerStyle={styles.inputFlex}
               />
             )}
           />
@@ -112,7 +140,7 @@ export default function ChangeInfo() {
                 onChangeText={onChange}
                 value={value}
                 error={errors.lastName?.message}
-                width={160}
+                containerStyle={styles.inputFlex}
               />
             )}
           />
@@ -122,7 +150,13 @@ export default function ChangeInfo() {
         <Controller
           control={control}
           name="phone"
-          rules={{ required: "Phone is required" }}
+          rules={{
+            required: "Phone is required",
+            pattern: {
+              value: /^[0-9+\-\s()]{10,}$/,
+              message: "Please provide a valid phone number",
+            },
+          }}
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
               label="Phone Number"
@@ -138,17 +172,51 @@ export default function ChangeInfo() {
           )}
         />
 
-        <TouchableOpacity
-          style={[
-            link.btn_link,
-            link.btn_link_base,
-            { marginTop: 20, marginBottom: 20 },
-          ]}
+        <CustomButton
+          content={isUpdating ? "Saving..." : "Save Changes"}
           onPress={handleSubmit(onSubmit)}
-        >
-          <Text style={text.text_btn}>Change Password</Text>
-        </TouchableOpacity>
-      </View>
+          isPending={isUpdating}
+          style={styles.saveButton}
+        />
+      </ScrollView>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#f9f9f9",
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+  },
+  scrollContent: {
+    padding: 20,
+  },
+  nameContainer: {
+    flexDirection: "row",
+    gap: 16,
+  },
+  inputFlex: {
+    flex: 1,
+  },
+  saveButton: {
+    marginTop: 32,
+  },
+});

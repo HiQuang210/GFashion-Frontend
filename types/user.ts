@@ -17,6 +17,9 @@ export interface UserInfo {
   totalSpent?: number;
   createdAt: string;
   updatedAt?: string;
+  favoriteCount: number;
+  orderCount?: number;
+  reviewCount?: number;
 }
 
 export interface SignUpData {

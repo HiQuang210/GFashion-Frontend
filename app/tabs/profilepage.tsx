@@ -1,12 +1,4 @@
-import PageHeader from "@/components/PageHeader";
-import { useUser } from "@/hooks/useUser";
-import layout from "@/styles/layout";
-import Feather from "@expo/vector-icons/Feather";
-
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useEffect, useState } from "react";
-import * as ImagePicker from "expo-image-picker";
-
+import React, { useEffect, useState } from "react";
 import {
   SafeAreaView,
   View,
@@ -15,155 +7,303 @@ import {
   TouchableOpacity,
   Text,
   Alert,
+  ScrollView,
+  ActivityIndicator,
+  RefreshControl,
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import Feather from "@expo/vector-icons/Feather";
+import { useUser } from "@/hooks/useUser";
 import { useUpdateUser } from "@/hooks/useUpdateUser";
+import { useTabNavigation } from "@/contexts/TabNavigation";
 import SectionProfile from "@/components/SectionProfile";
-import LogoutSec from "@/components/LogoutSec";
+import LogoutSection from "@/components/SectionLogout";
+import StatsCard from "@/components/StatsCard";
+import { useRouter } from "expo-router";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { useFavorites } from "@/hooks/useFavorite";
+
+const formatCurrency = (value: number = 0) =>
+  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
+    value
+  );
 
 export default function ProfilePage() {
-  const [userId, setUserId] = useState<string | null>(null);
-  const [image, setImage] = useState<string | null>(null);
-  const uploadMutation = useUpdateUser();
-  const [hide, useHide] = useState(false);
-  const { user, isLoading, refetch } = useUser(userId);
+  const {
+    userInfo,
+    isLoading: isAuthLoading,
+    refreshUserData,
+  } = useAuthContext();
+  const [showLogout, setShowLogout] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    AsyncStorage.getItem("userId")
-      .then((id) => {
-        console.log("User ID:", id);
-        setUserId(id);
-      })
-      .catch((err) => console.error("AsyncStorage error:", err));
-  }, []);
+  const { navigateToTab } = useTabNavigation();
+  const router = useRouter();
+
+  const userId = userInfo?._id;
+  const { favorites, isLoading: isFavoritesLoading } = useFavorites();
+  const { user, isLoading: isUserLoading, refetch } = useUser(userId);
+  const uploadMutation = useUpdateUser();
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    await Promise.all([refetch(), refreshUserData()]);
+    setRefreshing(false);
+  }, [refetch, refreshUserData]);
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      alert("Permisson denied");
+      alert("Permission denied");
       return;
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: false,
+      allowsEditing: true,
       aspect: [1, 1],
       quality: 1,
     });
 
     if (!result.canceled) {
       const picked = result.assets[0];
-      setImage(picked.uri);
-
-      // Tạo FormData
       const formData = new FormData();
       formData.append("avatar", {
         uri: picked.uri,
         name: picked.fileName || `avatar_${Date.now()}.jpg`,
-        type:
-          picked.type === "image" ? "image/jpeg" : picked.type || "image/jpeg",
+        type: "image/jpeg",
       } as any);
 
-      uploadMutation.mutate(
-        {
-          id: userId,
-          data: {}, 
-          file: formData, 
-        } as any,
-        {
-          onSuccess: async (user) => {
-            await refetch();
-            Alert.alert("Thành công", "Ảnh đại diện đã được cập nhật.");
-          },
-          onError: (error: any) => {
-            Alert.alert("Lỗi cập nhật", error.message || "Có lỗi xảy ra");
-          },
-        }
-      );
+      uploadMutation.mutate({ id: userId, data: {}, file: formData } as any, {
+        onSuccess: async () => {
+          await refetch();
+          Alert.alert("Success", "Avatar has been updated.");
+        },
+        onError: (error: any) => {
+          Alert.alert("Update Error", error.message || "An error occurred");
+        },
+      });
     }
   };
 
-  if (!userId || isLoading) {
-    return <Text>loading...</Text>;
+  if ((isAuthLoading || isUserLoading) && !refreshing) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#704F38" />
+      </View>
+    );
   }
+
+  const userData = user?.data || userInfo;
+
+  if (!userData) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.errorText}>
+          Could not load user data. Please log in again.
+        </Text>
+      </SafeAreaView>
+    );
+  }
+
+  const avatarSource = userData.img
+    ? { uri: userData.img }
+    : require("@/assets/images/default-avatar.png");
+
+  const navigateToOrders = () => router.push("/orders");
+  const navigateToChangeInfo = () => router.push("/changeInfo");
+  const navigateToMyReviews = () => router.push("/myreviews");
+
   return (
     <SafeAreaView style={styles.container}>
-      <PageHeader content={"Profile"}></PageHeader>
-      <View>
-        <View style={{ position: "relative" }}>
-          {user.data?.img && (
-            <Image source={{ uri: user.data.img }} style={styles.img} />
-          )}
-
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#704F38"]}
+          />
+        }
+        contentContainerStyle={styles.scrollContent}
+      >
+        <View style={styles.profileCard}>
           <TouchableOpacity
-            onPress={pickImage}
-            style={[styles.edit, layout.flex_col_center]}
+            onPress={navigateToChangeInfo}
+            style={styles.editProfileButton}
           >
-            <Feather name="edit-3" size={25} color={"#fff"} />
+            <Feather name="edit" size={20} color="#333" />
           </TouchableOpacity>
+          <TouchableOpacity onPress={pickImage} style={styles.avatarContainer}>
+            <Image source={avatarSource} style={styles.avatar} />
+          </TouchableOpacity>
+          <Text style={styles.fullName}>
+            {userData.lastName} {userData.firstName}
+          </Text>
+          <Text style={styles.email}>{userData.email}</Text>
         </View>
-      </View>
-      <View style={{ marginTop: 20 }}>
-        <Text
-          style={{
-            textAlign: "center",
-            fontSize: 20,
-            fontWeight: 500,
-            fontFamily: "Inter",
-          }}
-        >
-          {user.data.lastName} {user.data.firstName}
-        </Text>
-      </View>
-      <View style={{ height: 460 }}>
-        <SectionProfile
-          icon={"user-o"}
-          content={"Your profile"}
-          route={"/changeInfo"}
-        />
-        <SectionProfile icon={"list-alt"} content={"My Order"} route={""} />
-        <SectionProfile
-          icon={"gear"}
-          content={"Settings"}
-          route={"/settings"}
-        />
-        <SectionProfile
-          icon={"exclamation"}
-          content={"Help Center"}
-          route={""}
-        />
-        <SectionProfile icon={"lock"} content={"Privacy policy"} route={""} />
-        <SectionProfile
-          icon={"sign-out"}
-          content={"Log out"}
-          route={""}
-          handleHide={useHide}
-          hide={hide}
-        />
-      </View>
-      {hide && <LogoutSec handleHide={useHide} />}
+
+        <View style={styles.statsGridContainer}>
+          <View style={styles.statsRow}>
+            <StatsCard
+              icon="shopping-bag"
+              label="My Orders"
+              value={userData.orderCount ?? 0}
+              onPress={navigateToOrders}
+            />
+            <StatsCard
+              icon="heart"
+              label="Wishlist"
+              value={isFavoritesLoading ? "..." : favorites.length}
+              onPress={() => navigateToTab("wishlist")}
+            />
+          </View>
+          <View style={styles.statsRow}>
+            <StatsCard
+              icon="star"
+              label="My Reviews"
+              value={userData.reviewCount ?? 0}
+              onPress={navigateToMyReviews}
+            />
+            <StatsCard
+              icon="money"
+              label="Total Spent"
+              value={formatCurrency(userData.totalSpent).replace("₫", "")}
+            />
+          </View>
+        </View>
+
+        <View style={styles.menuContainer}>
+          <SectionProfile
+            icon="user"
+            content="Account Info"
+            route="/changeInfo"
+          />
+          <SectionProfile icon="gear" content="Settings" route="/settings" />
+          <SectionProfile
+            icon="map-marker"
+            content="Shipping Addresses"
+            route=""
+          />
+          <SectionProfile
+            icon="exclamation-circle"
+            content="Help Center"
+            route=""
+          />
+          <SectionProfile icon="lock" content="Privacy Policy" route="" />
+          <View style={styles.separator} />
+          <SectionProfile
+            icon={"sign-out"}
+            content={"Log Out"}
+            handlePress={() => setShowLogout(true)}
+            route={""}
+          />
+        </View>
+      </ScrollView>
+
+      <LogoutSection visible={showLogout} onClose={() => setShowLogout(false)} />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#f9f9f9",
+    flex: 1,
+    backgroundColor: "#F4F1ED",
   },
-  img: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    marginHorizontal: "auto",
+  scrollContent: {
+    paddingBottom: 100,
   },
-  edit: {
-    width: 50,
-    height: 50,
-    borderWidth: 3,
-    borderColor: "#fff",
-    backgroundColor: "#704F38",
-    borderRadius: 30,
+  loaderContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F4F1ED",
+  },
+  errorText: {
+    textAlign: "center",
+    marginTop: 50,
+    color: "#704F38",
+  },
+  profileCard: {
+    backgroundColor: "#fff",
+    marginHorizontal: 16,
+    marginTop: 24,
+    borderRadius: 20,
+    paddingVertical: 24,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
+    position: "relative",
+  },
+  editProfileButton: {
     position: "absolute",
-    bottom: 0,
-    right: 90,
+    top: 16,
+    right: 16,
+    padding: 8,
+    backgroundColor: "#F4F1ED",
+    borderRadius: 20,
+  },
+  avatarContainer: {
+    borderWidth: 4,
+    borderColor: "#704F38",
+    borderRadius: 74,
+    padding: 4,
+  },
+  avatar: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+  },
+  fullName: {
+    marginTop: 16,
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#1F2029",
+  },
+  email: {
+    marginTop: 4,
+    fontSize: 16,
+    color: "#797979",
+  },
+  statsGridContainer: {
+    paddingHorizontal: 16,
+    marginTop: 24,
+    gap: 16,
+  },
+  statsRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    gap: 16,
+  },
+  statsCard: {
+    flex: 1,
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  menuContainer: {
+    marginTop: 24,
+    marginHorizontal: 16,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    overflow: "hidden",
+    paddingVertical: 8,
+    marginBottom: 24,
+  },
+  separator: {
+    height: 1,
+    backgroundColor: "#F4F1ED",
+    marginVertical: 8,
+    marginHorizontal: 20,
   },
 });

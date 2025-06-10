@@ -37,8 +37,8 @@ const SwipeTabLayout = () => {
       const response = await UserAPI.getUserCart();
       if (response.status === "OK" && response.data) {
         const cartItems = response.data as CartItemData[];
-        const totalItems = CartUtils.calculateTotalItems(cartItems);
-        setCartItemCount(totalItems);
+        const uniqueItemCount = CartUtils.calculateUniqueItemCount(cartItems);
+        setCartItemCount(uniqueItemCount);
       } else {
         setCartItemCount(0);
       }

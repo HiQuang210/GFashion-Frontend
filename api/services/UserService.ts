@@ -36,13 +36,13 @@ export interface HandleCartData {
 
 const buildQueryParams = (params: Record<string, any>): string => {
   const queryParams = new URLSearchParams();
-  
+
   Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== '') {
+    if (value !== undefined && value !== null && value !== "") {
       queryParams.append(key, value.toString());
     }
   });
-  
+
   return queryParams.toString();
 };
 
@@ -52,7 +52,6 @@ const handleApiCall = async <T>(
 ): Promise<T> => {
   try {
     const response = await apiCall();
-    console.log(`${operation} successful:`, response.data);
     return response.data;
   } catch (error: any) {
     console.error(`${operation} error:`, error.response?.data || error.message);
@@ -61,73 +60,95 @@ const handleApiCall = async <T>(
 };
 
 export class UserAPI {
-  static async requestEmailVerification(formData: SignUpData): Promise<ApiResponse> {
-    return handleApiCall(
-      "Email verification request",
-      () => axiosClient.post("user/request-email-verification", formData)
+  static async requestEmailVerification(
+    formData: SignUpData
+  ): Promise<ApiResponse> {
+    return handleApiCall("Email verification request", () =>
+      axiosClient.post("user/request-email-verification", formData)
     );
   }
 
   static async signUp(formData: SignUpData): Promise<SignUpResponse> {
-    return handleApiCall(
-      "Sign up",
-      () => axiosClient.post("user/sign-up", formData)
+    return handleApiCall("Sign up", () =>
+      axiosClient.post("user/sign-up", formData)
     );
   }
 
   static async signIn(formData: LoginData): Promise<LoginResponse> {
-    return handleApiCall(
-      "Login",
-      () => axiosClient.post("user/sign-in", formData)
+    return handleApiCall("Login", () =>
+      axiosClient.post("user/sign-in", formData)
     );
   }
 
   static async signOut(): Promise<ApiResponse> {
-    return handleApiCall(
-      "Sign out",
-      () => axiosClient.post("user/sign-out")
-    );
+    return handleApiCall("Sign out", () => axiosClient.post("user/sign-out"));
   }
 
   static async getUserDetail(userId: string): Promise<UserDetailResponse> {
-    return handleApiCall(
-      "Get user detail",
-      () => axiosClient.get(`user/get-detail/${userId}`)
+    return handleApiCall("Get user detail", () =>
+      axiosClient.get(`user/get-detail/${userId}`)
     );
   }
 
-  static async updateUser(userId: string, data: UpdateUserData): Promise<UpdateUserResponse> {
-    return handleApiCall(
-      "Update user",
-      () => axiosClient.put(`user/${userId}`, data)
+  static async updateUser(
+    userId: string,
+    data: UpdateUserData,
+    file?: any
+  ): Promise<UpdateUserResponse> {
+    if (file) {
+      const formData = new FormData();
+
+      formData.append("avatar", file);
+
+      (Object.keys(data) as Array<keyof UpdateUserData>).forEach((key) => {
+        const value = data[key];
+        if (value !== undefined && value !== null) {
+          formData.append(key, value);
+        }
+      });
+
+      return axiosClient
+        .put(`/user/update-user/${userId}`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then((res) => res.data);
+    } else {
+      return axiosClient
+        .put(`/user/update-user/${userId}`, data)
+        .then((res) => res.data);
+    }
+  }
+
+  static async changePassword(
+    userId: string,
+    data: ChangePasswordData
+  ): Promise<ChangePasswordResponse> {
+    return handleApiCall("Change password", () =>
+      axiosClient.put(`user/change-password/${userId}`, data)
     );
   }
 
-  static async changePassword(userId: string, data: ChangePasswordData): Promise<ChangePasswordResponse> {
-    return handleApiCall(
-      "Change password",
-      () => axiosClient.put(`user/${userId}/change-password`, data)
+  static async requestPasswordReset(
+    data: RequestPasswordResetData
+  ): Promise<ApiResponse> {
+    return handleApiCall("Password reset request", () =>
+      axiosClient.post("user/request-password-reset", data)
     );
   }
 
-  static async requestPasswordReset(data: RequestPasswordResetData): Promise<ApiResponse> {
-    return handleApiCall(
-      "Password reset request",
-      () => axiosClient.post("user/request-password-reset", data)
-    );
-  }
-
-  static async verifyResetCode(data: VerifyResetCodeData): Promise<ApiResponse> {
-    return handleApiCall(
-      "Reset code verification",
-      () => axiosClient.post("user/verify-reset-code", data)
+  static async verifyResetCode(
+    data: VerifyResetCodeData
+  ): Promise<ApiResponse> {
+    return handleApiCall("Reset code verification", () =>
+      axiosClient.post("user/verify-reset-code", data)
     );
   }
 
   static async resetPassword(data: ResetPasswordData): Promise<ApiResponse> {
-    return handleApiCall(
-      "Password reset",
-      () => axiosClient.post("user/reset-password", data)
+    return handleApiCall("Password reset", () =>
+      axiosClient.post("user/reset-password", data)
     );
   }
 
@@ -136,34 +157,29 @@ export class UserAPI {
     const queryString = buildQueryParams({
       action: data.action,
       userId: data.userId,
-      productId: data.productId
+      productId: data.productId,
     });
 
-    return handleApiCall(
-      "Handle favorite",
-      () => axiosClient.post(`user/handle-favorite?${queryString}`)
+    return handleApiCall("Handle favorite", () =>
+      axiosClient.post(`user/handle-favorite?${queryString}`)
     );
   }
 
   static async getUserFavoriteProducts(): Promise<ApiResponse> {
-    return handleApiCall(
-      "Get user favorites",
-      () => axiosClient.get("user/get-user-favorites")
+    return handleApiCall("Get user favorites", () =>
+      axiosClient.get("user/get-user-favorites")
     );
   }
-  
-  // Cart methods
+
   static async handleCart(data: HandleCartData): Promise<CartResponse> {
-    return handleApiCall(
-      "Handle cart",
-      () => axiosClient.post("user/handle-cart", data)
+    return handleApiCall("Handle cart", () =>
+      axiosClient.post("user/handle-cart", data)
     );
   }
 
   static async getUserCart(): Promise<CartResponse> {
-    return handleApiCall(
-      "Get user cart",
-      () => axiosClient.get("user/get-user-cart")
+    return handleApiCall("Get user cart", () =>
+      axiosClient.get("user/get-user-cart")
     );
   }
 }

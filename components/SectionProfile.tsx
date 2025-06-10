@@ -1,6 +1,6 @@
 import layout from "@/styles/layout";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { router } from "expo-router";
+import { Link, router } from "expo-router";
 import { Dispatch, SetStateAction, useState } from "react";
 import { TouchableOpacity, View, Text } from "react-native";
 
@@ -8,24 +8,23 @@ interface props {
   icon: string;
   content: string;
   route: string;
-  hide?: boolean;
-  handleHide?: Dispatch<SetStateAction<boolean>>;
+  handlePress?: () => void;
 }
 
 export default function SectionProfile({
   icon,
   content,
   route,
-  hide,
-  handleHide = undefined,
+  handlePress,
 }: props) {
   function hanldeButton() {
-    router.push(`${route}` as any);
+    if (handlePress) {
+      handlePress();
+    } else {
+      router.push(`${route}` as any);
+    }
   }
 
-  function handleLogout() {
-    if (handleHide) handleHide(!hide);
-  }
   return (
     <TouchableOpacity
       style={{
@@ -38,7 +37,7 @@ export default function SectionProfile({
         borderBottomColor: "#ededed",
         borderBottomWidth: 1,
       }}
-      onPress={content === "Log out" ? handleLogout : hanldeButton}
+      onPress={hanldeButton}
     >
       <View style={[layout.flex_row, { gap: 10 }]}>
         <FontAwesome name={icon as any} size={22} color={"#704F38"} />

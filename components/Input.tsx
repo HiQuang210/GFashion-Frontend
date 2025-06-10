@@ -24,6 +24,8 @@ type InputProps = {
   onBlur?: () => void;
   error?: string;
   width?: DimensionValue;
+  editable?: boolean;
+  containerStyle?: any;
 };
 
 export default function Input({
@@ -37,6 +39,8 @@ export default function Input({
   onBlur,
   error,
   width = "100%",
+  editable = true,
+  containerStyle,
 }: InputProps) {
   function containsPass(password: string) {
     return password.toLowerCase().includes("pass");
@@ -87,13 +91,17 @@ export default function Input({
     );
   }
   return (
-    <View style={layout.margin_bottom_s}>
+    <View style={[layout.margin_bottom_s, containerStyle]}>
       <Text>{label}</Text>
       <TextInput
         placeholder={`${placeholder}`}
         inputMode={`${inputMode}`}
         keyboardType={`${keyboardType}`}
-        style={[styles.input, { width: width }]}
+        editable={editable}
+        style={[
+          styles.input,
+          { width: "100%", backgroundColor: !editable ? "#f0f0f0" : "#fff" },
+        ]}
         placeholderTextColor={"#bcbcbc"}
         secureTextEntry={secureTextEntry}
         value={value}

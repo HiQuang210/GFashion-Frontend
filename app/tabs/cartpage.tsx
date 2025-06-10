@@ -13,7 +13,7 @@ import { UserAPI } from '@/api/services/UserService';
 import { CartItemData } from '@/types/user';
 import { CartUtils } from '@/utils/cartHelper';
 import { useToast } from '@/hooks/useToast';
-import { useTabNavigation } from '@/contexts/TabNavigation'; // Add this import
+import { useTabNavigation } from '@/contexts/TabNavigation'; 
 import CartItem from '@/components/CartItem';
 import text from '@/styles/text';
 import { styles } from '@/styles/cart/cartpage';
@@ -22,7 +22,7 @@ export default function CartPage() {
   const { userInfo } = useAuth();
   const queryClient = useQueryClient();
   const { showErrorToast, showSuccessToast } = useToast();
-  const { refreshCartCount } = useTabNavigation(); // Add this hook
+  const { refreshCartCount } = useTabNavigation(); 
 
   const { data: cartItems = [], isLoading, refetch, error } = useQuery<CartItemData[]>({
     queryKey: ['userCart', userInfo?._id],

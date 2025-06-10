@@ -1,8 +1,15 @@
 import { useMutation } from "@tanstack/react-query";
-import { updateUser } from "@/api/services/UserService";
+import { UserAPI } from "@/api/services/UserService";
+
+interface UpdateUserParams {
+  id: string;
+  data: any;
+  file?: FormData;
+}
 
 export const useUpdateUser = () => {
   return useMutation({
-    mutationFn: ({ id, data, file }) => updateUser({ id, data, file }),
+    mutationFn: ({ id, data, file }: UpdateUserParams) =>
+      UserAPI.updateUser(id, data, file),
   });
 };

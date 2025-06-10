@@ -1,12 +1,11 @@
-import PageHeader from "@/components/PageHeader";
+import BackButton from "@/components/BackButton";
 import SectionProfile from "@/components/SectionProfile";
-import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Settings() {
   return (
     <SafeAreaView>
-      <PageHeader content="Settings" />
+      <BackButton />
       <SectionProfile
         icon={"key"}
         content={"Password Manager"}
