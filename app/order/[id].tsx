@@ -78,7 +78,7 @@ const OrderDetailPage = () => {
 
   const handleWriteReview = () => {
     router.push({
-      pathname: '/review/create' as any,
+      pathname: '/order/review',
       params: { orderId: id },
     });
   };
