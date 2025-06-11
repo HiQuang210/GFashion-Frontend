@@ -9,11 +9,7 @@ export function useAuth() {
   const [isLoading, setIsLoading] = useState(true);
   const queryClient = useQueryClient();
 
-  useEffect(() => {
-    loadUserData();
-  }, []);
-
-  const loadUserData = async () => {
+  const loadUserData = useCallback(async () => {
     try {
       setIsLoading(true);
       const authData = await getAuthData();
@@ -25,11 +21,14 @@ export function useAuth() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadUserData();
+  }, [loadUserData]);
 
   const storeAuthData = async (response: LoginResponse): Promise<boolean> => {
     try {
-      // Clear any existing auth data first to prevent conflicts
       await clearAuthData();
       
       await AsyncStorage.multiSet([
@@ -80,7 +79,6 @@ export function useAuth() {
 
   const clearAuthData = useCallback(async () => {
     try {
-      // Get all AsyncStorage keys and remove all auth-related ones
       const allKeys = await AsyncStorage.getAllKeys();
       const authKeys = allKeys.filter(key => 
         ["accessToken", "refreshToken", "userId", "userInfo"].includes(key)
@@ -91,11 +89,7 @@ export function useAuth() {
       }
 
       setUserInfo(null);
-
-      // Clear all React Query cache
       queryClient.clear();
-      
-      // Also invalidate all queries to ensure fresh data on next login
       await queryClient.invalidateQueries();
       
     } catch (error) {

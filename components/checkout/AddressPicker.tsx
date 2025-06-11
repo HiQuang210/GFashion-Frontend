@@ -34,7 +34,7 @@ export default function AddressPicker({ selectedAddress, onAddressSelect }: Addr
             ) : (
               <>
                 <Text style={styles.selectAddressText}>Select delivery address</Text>
-                <Text style={styles.selectAddressSubtext}>Choose where you want your order delivered</Text>
+                <Text style={styles.selectAddressSubtext}>Choose where you want your order completed</Text>
               </>
             )}
           </View>

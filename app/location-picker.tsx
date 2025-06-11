@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import BackButton from '@/components/BackButton';
 import { useAuth } from '@/hooks/useAuth';
 import { useUser } from '@/hooks/useUser';
@@ -25,6 +26,15 @@ export default function LocationPicker() {
   
   const [isUpdating, setIsUpdating] = useState(false);
   const [deleteConfirmIndex, setDeleteConfirmIndex] = useState<number | null>(null);
+
+  // Refresh user data when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      if (userInfo?._id) {
+        refetchUser();
+      }
+    }, [userInfo?._id, refetchUser])
+  );
 
   const addresses = useMemo(() => {
     const addressSource = userData?.data?.address;
@@ -56,8 +66,16 @@ export default function LocationPicker() {
   }, [router]);
 
   const handleEditAddress = useCallback((index: number) => {
-    showErrorToast('Edit Address', 'Edit functionality will be implemented soon');
-  }, [showErrorToast]);
+    const addressToEdit = addresses[index];
+    router.push({
+      pathname: '/address-form',
+      params: {
+        editMode: 'true',
+        editIndex: index.toString(),
+        addressData: JSON.stringify(addressToEdit)
+      }
+    });
+  }, [addresses, router]);
 
   const handleDeleteConfirmation = useCallback((index: number) => {
     if (deleteConfirmIndex === index) {
@@ -85,7 +103,7 @@ export default function LocationPicker() {
       
       await UserAPI.updateUser(userInfo._id, { address: updatedAddresses } as any);
       
-      // Only refetch user data, no need for refreshUserData
+      // Refetch user data to get updated addresses
       await refetchUser();
       
       showSuccessToast('Success', 'Address deleted successfully');
@@ -97,10 +115,6 @@ export default function LocationPicker() {
       setDeleteConfirmIndex(null);
     }
   }, [addresses, userInfo?._id, refetchUser, showSuccessToast, showErrorToast]);
-
-  const handleRetry = useCallback(() => {
-    refetchUser();
-  }, [refetchUser]);
 
   const renderAddressItem = useCallback(({ item, index }: { item: Address; index: number }) => {
     const isConfirmingDelete = deleteConfirmIndex === index;
@@ -165,14 +179,14 @@ export default function LocationPicker() {
       </Text>
       <TouchableOpacity
         style={[styles.addButton, { marginTop: 16, backgroundColor: '#ff6b6b' }]}
-        onPress={handleRetry}
+        onPress={() => refetchUser()}
         activeOpacity={0.8}
       >
         <Ionicons name="refresh" size={24} color="#fff" />
         <Text style={styles.addButtonText}>Retry</Text>
       </TouchableOpacity>
     </View>
-  ), [handleRetry]);
+  ), [refetchUser]);
 
   const renderLoadingState = useCallback(() => (
     <View style={styles.loadingContainer}>
@@ -184,33 +198,6 @@ export default function LocationPicker() {
   const keyExtractor = useCallback((item: Address, index: number) => 
     `${item.recipient}-${item.phone}-${index}`, []);
 
-  const renderContent = () => {
-    if (isLoading) {
-      return renderLoadingState();
-    }
-
-    if (isError) {
-      return renderErrorState();
-    }
-
-    if (addresses.length === 0) {
-      return renderEmptyState();
-    }
-
-    return (
-      <FlatList
-        data={addresses}
-        renderItem={renderAddressItem}
-        keyExtractor={keyExtractor}
-        contentContainerStyle={styles.addressList}
-        showsVerticalScrollIndicator={false}
-        removeClippedSubviews={false}
-        maxToRenderPerBatch={10}
-        windowSize={10}
-      />
-    );
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -220,7 +207,24 @@ export default function LocationPicker() {
       </View>
 
       <View style={styles.content}>
-        {renderContent()}
+        {isLoading ? (
+          renderLoadingState()
+        ) : isError ? (
+          renderErrorState()
+        ) : addresses.length === 0 ? (
+          renderEmptyState()
+        ) : (
+          <FlatList
+            data={addresses}
+            renderItem={renderAddressItem}
+            keyExtractor={keyExtractor}
+            contentContainerStyle={styles.addressList}
+            showsVerticalScrollIndicator={false}
+            removeClippedSubviews={false}
+            maxToRenderPerBatch={10}
+            windowSize={10}
+          />
+        )}
 
         <TouchableOpacity
           style={[

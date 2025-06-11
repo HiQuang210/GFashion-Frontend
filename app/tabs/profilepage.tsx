@@ -110,7 +110,7 @@ export default function ProfilePage() {
     ? { uri: userData.img }
     : require("@/assets/images/default-avatar.png");
 
-  const navigateToOrders = () => router.push("/orders/index");
+  const navigateToOrders = () => router.push("/orders");
   const navigateToChangeInfo = () => router.push("/edit-profile");
   const navigateToMyReviews = () => router.push("/my-reviews");
 

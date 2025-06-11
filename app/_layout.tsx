@@ -49,7 +49,8 @@ export default function RootLayout() {
 
             {/* Shopping Flow */}
             <Stack.Screen name="checkout" options={{ title: "Checkout" }} />
-            <Stack.Screen name="address-form" options={{ title: "AddAddress"}} />
+            <Stack.Screen name="address-form" options={{ title: "Address Form"}} />
+            <Stack.Screen name="order-success" options={{ title: "Order Success"}} />
 
             {/* Other Screens */}
             <Stack.Screen name="orders" options={{ title: "My Orders" }} />

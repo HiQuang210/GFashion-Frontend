@@ -8,7 +8,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import BackButton from '@/components/BackButton';
 import LocationPicker from '@/components/LocationPicker';
 import {
@@ -20,12 +20,18 @@ import { useAuth } from '@/hooks/useAuth';
 import { UserAPI } from '@/api/services/UserService';
 import { useToast } from '@/hooks/useToast';
 import { addressStyles } from '@/styles/address';
-import { Province, District, Ward } from '@/types/address';
+import { Province, District, Ward, Address } from '@/types/address';
 
 export default function AddAddress() {
   const router = useRouter();
+  const params = useLocalSearchParams();
   const { userInfo, refreshUserData } = useAuth();
   const { showSuccessToast, showErrorToast } = useToast();
+  
+  // Check if we're in edit mode
+  const isEditMode = params.editMode === 'true';
+  const editIndex = params.editIndex ? parseInt(params.editIndex as string) : null;
+  const editAddressData = params.addressData ? JSON.parse(params.addressData as string) as Address : null;
   
   // Form states
   const [recipient, setRecipient] = useState('');
@@ -46,26 +52,89 @@ export default function AddAddress() {
   const [isLoadingDistricts, setIsLoadingDistricts] = useState(false);
   const [isLoadingWards, setIsLoadingWards] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  
   const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [isInitialDataLoaded, setIsInitialDataLoaded] = useState(false);
 
   // Load provinces on component mount
   useEffect(() => {
     loadProvinces();
   }, []);
 
+  // Pre-fill form data if in edit mode
+  useEffect(() => {
+    if (isEditMode && editAddressData && !isInitialDataLoaded) {
+      setRecipient(editAddressData.recipient);
+      setPhone(editAddressData.phone);
+      parseLocationForEdit(editAddressData.location);
+      setIsInitialDataLoaded(true);
+    }
+  }, [isEditMode, editAddressData, isInitialDataLoaded]);
+
   // Update location string when selections change
   useEffect(() => {
-    if (selectedProvince && selectedDistrict && selectedWard) {
-      let locationString = '';
+    if (selectedProvince && selectedDistrict && selectedWard && isInitialDataLoaded) {
+      const locationParts = [selectedWard.name, selectedDistrict.name, selectedProvince.name];
       if (houseNumber.trim()) {
-        locationString = `${houseNumber.trim()}, ${selectedWard.name}, ${selectedDistrict.name}, ${selectedProvince.name}`;
-      } else {
-        locationString = `${selectedWard.name}, ${selectedDistrict.name}, ${selectedProvince.name}`;
+        locationParts.unshift(houseNumber.trim());
       }
-      setLocation(locationString);
+      setLocation(locationParts.join(', '));
     }
-  }, [selectedProvince, selectedDistrict, selectedWard, houseNumber]);
+  }, [selectedProvince, selectedDistrict, selectedWard, houseNumber, isInitialDataLoaded]);
+
+  const parseLocationForEdit = async (locationString: string) => {
+    const parts = locationString.split(', ');
+    
+    if (parts.length >= 3) {
+      const [provinceName, districtName, wardName] = [
+        parts[parts.length - 1],
+        parts[parts.length - 2], 
+        parts[parts.length - 3]
+      ];
+      
+      if (parts.length === 4) {
+        setHouseNumber(parts[0]);
+      }
+      
+      setLocation(locationString);
+      
+      // Delay to allow provinces to load
+      setTimeout(() => matchLocationComponents(provinceName, districtName, wardName), 1000);
+    }
+  };
+
+  const matchLocationComponents = async (provinceName: string, districtName: string, wardName: string) => {
+    try {
+      if (provinces.length === 0) {
+        setTimeout(() => matchLocationComponents(provinceName, districtName, wardName), 500);
+        return;
+      }
+
+      const matchedProvince = provinces.find(p => p.name === provinceName);
+      if (!matchedProvince) return;
+
+      setSelectedProvince(matchedProvince);
+      
+      const districtsData = await fetchDistrictsByProvince(matchedProvince.code);
+      const districtsList = districtsData.districts || [];
+      setDistricts(districtsList);
+      
+      const matchedDistrict = districtsList.find((d: District) => d.name === districtName);
+      if (!matchedDistrict) return;
+
+      setSelectedDistrict(matchedDistrict);
+      
+      const wardsData = await fetchWardsByDistrict(matchedDistrict.code);
+      const wardsList = wardsData.wards || [];
+      setWards(wardsList);
+      
+      const matchedWard = wardsList.find((w: Ward) => w.name === wardName);
+      if (matchedWard) {
+        setSelectedWard(matchedWard);
+      }
+    } catch (error) {
+      console.error('Error matching location components:', error);
+    }
+  };
 
   const loadProvinces = async () => {
     try {
@@ -122,82 +191,75 @@ export default function AddAddress() {
     loadWards(district.code);
   };
 
-  const handleWardSelect = (ward: Ward) => {
-    setSelectedWard(ward);
-  };
-
   const validateForm = () => {
-    if (!recipient.trim()) {
-      showErrorToast('Validation Error', 'Please enter recipient name');
-      return false;
-    }
-    if (!phone.trim()) {
-      showErrorToast('Validation Error', 'Please enter phone number');
-      return false;
-    }
-    if (phone.length < 10) {
-      showErrorToast('Validation Error', 'Please enter a valid phone number');
-      return false;
-    }
-    if (!selectedProvince || !selectedDistrict || !selectedWard) {
-      showErrorToast('Validation Error', 'Please select complete location (Province, District, Ward)');
-      return false;
+    const validations = [
+      { condition: !recipient.trim(), message: 'Please enter recipient name' },
+      { condition: !phone.trim(), message: 'Please enter phone number' },
+      { condition: phone.length < 10, message: 'Please enter a valid phone number' },
+      { condition: !selectedProvince || !selectedDistrict || !selectedWard, 
+        message: 'Please select complete location (Province, District, Ward)' }
+    ];
+
+    for (const { condition, message } of validations) {
+      if (condition) {
+        showErrorToast('Validation Error', message);
+        return false;
+      }
     }
     return true;
   };
 
   const handleSave = async () => {
-    if (!validateForm()) return;
+    if (!validateForm() || !userInfo?._id) return;
 
     try {
       setIsSaving(true);
       
-      const newAddress = {
+      const addressData = {
         recipient: recipient.trim(),
         phone: phone.trim(),
         location: location.trim(),
       };
 
       const currentAddresses = userInfo?.address || [];
-      const updatedAddresses = [...currentAddresses, newAddress];
+      let updatedAddresses;
 
-      if (userInfo?._id) {
-        // Create update data with address field
-        const updateData = {
-          address: updatedAddresses
-        };
-
-        await UserAPI.updateUser(userInfo._id, updateData as any);
-        
-        await refreshUserData();
-        
-        showSuccessToast('Success', 'Address saved successfully');
-        setTimeout(() => {
-          router.back();
-        }, 1500);
+      if (isEditMode && editIndex !== null) {
+        updatedAddresses = [...currentAddresses];
+        updatedAddresses[editIndex] = addressData;
       } else {
-        showErrorToast('Error', 'User information not available');
+        updatedAddresses = [...currentAddresses, addressData];
       }
+
+      await UserAPI.updateUser(userInfo._id, { address: updatedAddresses } as any);
+      await refreshUserData();
+      
+      const successMessage = isEditMode ? 'Address updated successfully' : 'Address saved successfully';
+      showSuccessToast('Success', successMessage);
+      
+      setTimeout(() => router.back(), 1500);
     } catch (error) {
       console.error('Error saving address:', error);
-      showErrorToast('Error', 'Failed to save address. Please try again.');
+      const errorMessage = isEditMode ? 'Failed to update address. Please try again.' : 'Failed to save address. Please try again.';
+      showErrorToast('Error', errorMessage);
     } finally {
       setIsSaving(false);
     }
   };
 
   const getLocationDisplayText = () => {
-    if (selectedProvince && selectedDistrict && selectedWard) {
-      return `${selectedWard.name}, ${selectedDistrict.name}, ${selectedProvince.name}`;
-    }
-    return 'Select province, district, and ward';
+    return selectedProvince && selectedDistrict && selectedWard
+      ? `${selectedWard.name}, ${selectedDistrict.name}, ${selectedProvince.name}`
+      : 'Select province, district, and ward';
   };
 
   return (
     <SafeAreaView style={addressStyles.container}>
       <View style={addressStyles.header}>
         <BackButton />
-        <Text style={addressStyles.title}>Add Delivery Address</Text>
+        <Text style={addressStyles.title}>
+          {isEditMode ? 'Edit Delivery Address' : 'Add Delivery Address'}
+        </Text>
         <View style={{ width: 24 }} />
       </View>
 
@@ -280,7 +342,9 @@ export default function AddAddress() {
             {isSaving ? (
               <ActivityIndicator size="small" color="#fff" />
             ) : (
-              <Text style={addressStyles.saveButtonText}>Save Address</Text>
+              <Text style={addressStyles.saveButtonText}>
+                {isEditMode ? 'Update Address' : 'Save Address'}
+              </Text>
             )}
           </TouchableOpacity>
         </View>
@@ -298,7 +362,7 @@ export default function AddAddress() {
         selectedWard={selectedWard}
         onProvinceSelect={handleProvinceSelect}
         onDistrictSelect={handleDistrictSelect}
-        onWardSelect={handleWardSelect}
+        onWardSelect={setSelectedWard}
         isLoadingProvinces={isLoadingProvinces}
         isLoadingDistricts={isLoadingDistricts}
         isLoadingWards={isLoadingWards}

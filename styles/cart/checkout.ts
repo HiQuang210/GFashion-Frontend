@@ -92,7 +92,44 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 0.5,
   },
+  loadingButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
   checkoutButtonDisabled: {
-    backgroundColor: '#CCC',
+    backgroundColor: '#CCCCCC',
+    opacity: 0.6,
+  },
+  paymentMethodContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24, 
+    marginTop: 8,
+  },
+
+  optionButtonSmall: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    backgroundColor: '#fff',
+    minWidth: 140,
+  },
+
+  optionButtonSelected: {
+    borderColor: '#704F38',
+    backgroundColor: '#F8F0E3',
+  },
+
+  optionTextSmall: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
   },
 });

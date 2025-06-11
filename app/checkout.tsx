@@ -7,16 +7,19 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { UserAPI } from '@/api/services/UserService';
+import { OrderAPI } from '@/api/services/OrderService';
 import { CartItemData } from '@/types/user';
+import { CreateOrderData } from '@/types/order';
 import { CartUtils } from '@/utils/cartHelper';
 import { useToast } from '@/hooks/useToast';
 import CheckoutItemPreview from '@/components/checkout/ItemPreview';
 import AddressPicker from '@/components/checkout/AddressPicker';
 import ShippingTypePicker from '@/components/checkout/DeliveryPicker';
+import PaymentPicker, { PaymentMethod } from '@/components/checkout/PaymentPicker';
 import OrderNote from '@/components/checkout/OrderNote';
 import OrderSummary from '@/components/checkout/OrderSummary';
 import { styles } from '@/styles/cart/checkout';
@@ -33,11 +36,12 @@ interface SelectedAddressData {
 export default function CheckoutPage() {
   const { userInfo } = useAuth();
   const router = useRouter();
-  const { showErrorToast } = useToast();
+  const { showErrorToast, showSuccessToast } = useToast();
+  const queryClient = useQueryClient();
   const params = useLocalSearchParams();
-  
   const [selectedAddress, setSelectedAddress] = useState<SelectedAddressData | null>(null);
   const [shippingType, setShippingType] = useState<ShippingType>('standard');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cod');
   const [orderNote, setOrderNote] = useState<string>('');
 
   // Handle address selection from route params
@@ -69,6 +73,25 @@ export default function CheckoutPage() {
     staleTime: 1000 * 60 * 2,
   });
 
+  // Create Order Mutation
+  const createOrderMutation = useMutation({
+    mutationFn: async (orderData: CreateOrderData) => {
+      return await OrderAPI.createOrder(orderData);
+    },
+    onSuccess: (response) => {
+      showSuccessToast('Success', 'Order placed successfully!');
+      
+      queryClient.invalidateQueries({ queryKey: ['userCart', userInfo?._id] });
+      router.replace('/order-success');
+    },
+    onError: (error: any) => {
+      const errorMessage = error?.response?.data?.message || 
+                          error?.message || 
+                          'Failed to place order. Please try again.';
+      showErrorToast('Order Failed', errorMessage);
+    },
+  });
+
   const cartSummary = useMemo(() => {
     return CartUtils.getCartSummary(cartItems);
   }, [cartItems]);
@@ -92,28 +115,57 @@ export default function CheckoutPage() {
     router.push('/location-picker');
   };
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (!selectedAddress) {
       showErrorToast('Error', 'Please select a delivery address');
       return;
     }
 
-    console.log('Checkout data:', {
+    if (cartItems.length === 0) {
+      showErrorToast('Error', 'Your cart is empty');
+      return;
+    }
+
+    // Prepare order data
+    const orderData: CreateOrderData = {
+      recipient: selectedAddress.recipient,
+      phone: selectedAddress.phone,
+      delivery: shippingType,
+      address: selectedAddress.location,
+      payment: paymentMethod,
+      ...(orderNote.trim() && { note: orderNote.trim() }),
+      // Don't include products - backend will use cart items
+    };
+
+    // Validate order data
+    const validation = OrderAPI.validateOrderData(orderData);
+    if (!validation.isValid) {
+      const firstError = Object.values(validation.errors)[0];
+      showErrorToast('Validation Error', firstError);
+      return;
+    }
+
+    console.log('Placing order with data:', {
       cartItems,
       selectedAddress,
       shippingType,
+      paymentMethod,
       orderNote,
       totalAmount: totalOrderAmount,
+      orderData
     });
 
-    // Here you would proceed with the actual checkout process
-    // For example, navigate to payment page or submit the order
+    // Execute the mutation
+    createOrderMutation.mutate(orderData);
   };
 
   const getAddressDisplayText = () => {
     if (!selectedAddress) return '';
     return `${selectedAddress.recipient} - ${selectedAddress.phone}\n${selectedAddress.location}`;
   };
+
+  const isPlacingOrder = createOrderMutation.isPending;
+  const canPlaceOrder = selectedAddress && !isPlacingOrder && cartItems.length > 0;
 
   if (isLoading) {
     return (
@@ -179,6 +231,14 @@ export default function CheckoutPage() {
           />
         </View>
 
+        {/* Payment Picker */}
+        <View style={styles.section}>
+          <PaymentPicker
+            selectedMethod={paymentMethod}
+            onMethodSelect={setPaymentMethod}
+          />
+        </View>
+
         {/* Order Note */}
         <View style={styles.section}>
           <OrderNote
@@ -202,15 +262,24 @@ export default function CheckoutPage() {
           <TouchableOpacity
             style={[
               styles.checkoutButton,
-              !selectedAddress && styles.checkoutButtonDisabled
+              !canPlaceOrder && styles.checkoutButtonDisabled
             ]}
             onPress={handleCheckout}
             activeOpacity={0.8}
-            disabled={!selectedAddress}
+            disabled={!canPlaceOrder}
           >
-            <Text style={styles.checkoutButtonText}>
-              Place Order
-            </Text>
+            {isPlacingOrder ? (
+              <View style={styles.loadingButtonContent}>
+                <ActivityIndicator size="small" color="#FFFFFF" />
+                <Text style={styles.checkoutButtonText}>
+                  Placing Order...
+                </Text>
+              </View>
+            ) : (
+              <Text style={styles.checkoutButtonText}>
+                Place Order
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
       </ScrollView>
