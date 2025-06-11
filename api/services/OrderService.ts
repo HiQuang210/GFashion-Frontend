@@ -28,33 +28,24 @@ const handleApiCall = async <T>(
     const response = await apiCall();
     return response.data;
   } catch (error: any) {
-    // console.error(`${operation} error:`, error.response?.data || error.message);
+    console.error(`${operation} error:`, error.response?.data || error.message);
     throw error;
   }
 };
 
 export class OrderAPI {
-  /**
-   * Create a new order
-   */
   static async createOrder(orderData: CreateOrderData): Promise<OrderResponse> {
     return handleApiCall("Create order", () =>
       axiosClient.post("order/create", orderData)
     );
   }
 
-  /**
-   * Cancel an order by ID
-   */
   static async cancelOrder(orderId: string): Promise<CancelOrderResponse> {
     return handleApiCall("Cancel order", () =>
       axiosClient.put(`order/cancel/${orderId}`)
     );
   }
 
-  /**
-   * Get all orders for the authenticated user
-   */
   static async getAllOrders(filters?: OrderFilters): Promise<OrdersResponse> {
     const queryString = filters ? `?${buildQueryParams(filters)}` : "";
     
@@ -63,18 +54,12 @@ export class OrderAPI {
     );
   }
 
-  /**
-   * Get order details by ID
-   */
   static async getOrderDetail(orderId: string): Promise<OrderResponse> {
     return handleApiCall("Get order detail", () =>
       axiosClient.get(`order/get-detail/${orderId}`)
     );
   }
 
-  /**
-   * Get orders by status
-   */
   static async getOrdersByStatus(
     status: string,
     page?: number,
@@ -87,37 +72,22 @@ export class OrderAPI {
     return this.getAllOrders(filters);
   }
 
-  /**
-   * Get pending orders
-   */
   static async getPendingOrders(): Promise<OrdersResponse> {
     return this.getOrdersByStatus("pending");
   }
 
-  /**
-   * Get completed orders
-   */
   static async getCompletedOrders(): Promise<OrdersResponse> {
     return this.getOrdersByStatus("completed");
   }
 
-  /**
-   * Get cancelled orders
-   */
   static async getCancelledOrders(): Promise<OrdersResponse> {
     return this.getOrdersByStatus("cancelled");
   }
 
-  /**
-   * Check if order can be cancelled
-   */
   static canCancelOrder(order: Order): boolean {
     return order.status === "pending";
   }
 
-  /**
-   * Calculate order total
-   */
   static calculateOrderTotal(order: Order): number {
     return order.products.reduce(
       (total, product) => total + product.price * product.quantity,
@@ -125,9 +95,6 @@ export class OrderAPI {
     );
   }
 
-  /**
-   * Get order status display text
-   */
   static getOrderStatusText(status: string): string {
     const statusMap: Record<string, string> = {
       pending: "Pending",
@@ -139,23 +106,17 @@ export class OrderAPI {
     return statusMap[status] || status;
   }
 
-  /**
-   * Get order status color for UI
-   */
   static getOrderStatusColor(status: string): string {
     const colorMap: Record<string, string> = {
-      pending: "#FFA500", // Orange
-      processing: "#007BFF", // Blue
-      shipping: "#6610F2", // Purple
-      completed: "#28A745", // Green
-      cancelled: "#DC3545", // Red
+      pending: "#FFA500",
+      processing: "#007BFF",
+      shipping: "#6610F2",
+      completed: "#28A745",
+      cancelled: "#DC3545",
     };
-    return colorMap[status] || "#6C757D"; // Gray as default
+    return colorMap[status] || "#6C757D";
   }
 
-  /**
-   * Validate order data before submission
-   */
   static validateOrderData(orderData: CreateOrderData): {
     isValid: boolean;
     errors: Record<string, string>;

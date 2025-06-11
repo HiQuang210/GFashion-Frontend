@@ -7,9 +7,11 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { OrderAPI } from '@/api/services/OrderService';
 import { useAuth } from '@/hooks/useAuth';
 import { Order } from '@/types/order';
@@ -67,11 +69,27 @@ const OrdersPage = () => {
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'VND',
     }).format(price);
   };
+
+  const BackButton = () => (
+    <TouchableOpacity
+      style={{
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: "#F5F5F5",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+      onPress={() => router.back()}
+    >
+      <FontAwesome name="arrow-left" size={20} color="#000000" />
+    </TouchableOpacity>
+  );
 
   const handleOrderPress = (orderId: string) => {
     router.push({
@@ -171,12 +189,16 @@ const OrdersPage = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>My Orders</Text>
-        <Text style={styles.headerSubtitle}>
-          {orders.length} order{orders.length !== 1 ? 's' : ''}
-        </Text>
+        <BackButton />
+        <View style={styles.headerCenter}>
+          <Text style={styles.headerTitle}>My Orders</Text>
+          <Text style={styles.headerSubtitle}>
+            {orders.length} order{orders.length !== 1 ? 's' : ''}
+          </Text>
+        </View>
+        <View style={styles.headerSpacer} />
       </View>
 
       <FlatList
@@ -195,8 +217,7 @@ const OrdersPage = () => {
         }
         ListEmptyComponent={renderEmptyState}
       />
-    </View>
+    </SafeAreaView>
   );
 };
-
 export default OrdersPage;

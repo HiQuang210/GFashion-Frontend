@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import {
   SafeAreaView,
   View,
-  StyleSheet,
   Image,
   TouchableOpacity,
   Text,
@@ -13,6 +12,7 @@ import {
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import Feather from "@expo/vector-icons/Feather";
+import { useQuery } from '@tanstack/react-query';
 import { useUser } from "@/hooks/useUser";
 import { useUpdateUser } from "@/hooks/useUpdateUser";
 import { useTabNavigation } from "@/contexts/TabNavigation";
@@ -22,6 +22,8 @@ import StatsCard from "@/components/StatsCard";
 import { useRouter } from "expo-router";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useFavorites } from "@/hooks/useFavorite";
+import { OrderAPI } from "@/api/services/OrderService";
+import { styles } from "@/styles/profile";
 
 const formatCurrency = (value: number = 0) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
@@ -45,11 +47,25 @@ export default function ProfilePage() {
   const { user, isLoading: isUserLoading, refetch } = useUser(userId);
   const uploadMutation = useUpdateUser();
 
+  // Fetch orders count from OrderService
+  const {
+    data: ordersResponse,
+    isLoading: isOrdersLoading,
+    refetch: refetchOrders,
+  } = useQuery({
+    queryKey: ['orders', userId],
+    queryFn: () => OrderAPI.getAllOrders(),
+    enabled: !!userId,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const ordersCount = ordersResponse?.data?.length || 0;
+
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
-    await Promise.all([refetch(), refreshUserData()]);
+    await Promise.all([refetch(), refreshUserData(), refetchOrders()]);
     setRefreshing(false);
-  }, [refetch, refreshUserData]);
+  }, [refetch, refreshUserData, refetchOrders]);
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -120,7 +136,7 @@ export default function ProfilePage() {
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
-            refreshing={refreshing}
+            refreshing={refreshing || isOrdersLoading}
             onRefresh={onRefresh}
             colors={["#704F38"]}
           />
@@ -148,7 +164,7 @@ export default function ProfilePage() {
             <StatsCard
               icon="shopping-bag"
               label="My Orders"
-              value={userData.orderCount ?? 0}
+              value={isOrdersLoading ? "..." : ordersCount}
               onPress={navigateToOrders}
             />
             <StatsCard
@@ -166,9 +182,9 @@ export default function ProfilePage() {
               onPress={navigateToMyReviews}
             />
             <StatsCard
-              icon="dollar-sign"
+              icon="credit-card"
               label="Total Spent"
-              value={formatCurrency(userData.totalSpent).replace("₫", "")}
+              value={formatCurrency(userData.totalSpent)}
             />
           </View>
         </View>
@@ -208,105 +224,3 @@ export default function ProfilePage() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#F4F1ED",
-  },
-  scrollContent: {
-    paddingBottom: 100,
-  },
-  loaderContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#F4F1ED",
-  },
-  errorText: {
-    textAlign: "center",
-    marginTop: 50,
-    color: "#704F38",
-  },
-  profileCard: {
-    backgroundColor: "#fff",
-    marginHorizontal: 16,
-    marginTop: 24,
-    borderRadius: 20,
-    paddingVertical: 24,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
-    position: "relative",
-  },
-  editProfileButton: {
-    position: "absolute",
-    top: 16,
-    right: 16,
-    padding: 8,
-    backgroundColor: "#F4F1ED",
-    borderRadius: 20,
-  },
-  avatarContainer: {
-    borderWidth: 4,
-    borderColor: "#704F38",
-    borderRadius: 74,
-    padding: 4,
-  },
-  avatar: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-  },
-  fullName: {
-    marginTop: 16,
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#1F2029",
-  },
-  email: {
-    marginTop: 4,
-    fontSize: 16,
-    color: "#797979",
-  },
-  statsGridContainer: {
-    paddingHorizontal: 16,
-    marginTop: 24,
-    gap: 16,
-  },
-  statsRow: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    gap: 16,
-  },
-  statsCard: {
-    flex: 1,
-    alignItems: "center",
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 5,
-    elevation: 3,
-  },
-  menuContainer: {
-    marginTop: 24,
-    marginHorizontal: 16,
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    overflow: "hidden",
-    paddingVertical: 8,
-    marginBottom: 24,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: "#F4F1ED",
-    marginVertical: 8,
-    marginHorizontal: 20,
-  },
-});

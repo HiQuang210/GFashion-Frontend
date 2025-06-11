@@ -9,7 +9,7 @@ import ProductImageGallery from "@/components/productdetail/ImageGallery";
 import ProductInfo from "@/components/productdetail/Info";
 import ProductSelections from "@/components/productdetail/Selection";
 import ProductBottomBar from "@/components/productdetail/BottomBar";
-import { styles } from "@/styles/productDetail";
+import { styles } from "@/styles/product-detail";
 
 export default function ProductDetail() {
   const { id } = useLocalSearchParams();
@@ -130,7 +130,6 @@ export default function ProductDetail() {
         onCartUpdate={handleCartUpdate}
         onCartError={handleCartError}
       />
-      {/* Toast component - positioned at the top level to be visible over modals */}
       <Toast />
     </View>
   );

@@ -1,0 +1,103 @@
+import { StyleSheet } from 'react-native';
+
+export const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#F4F1ED",
+  },
+  scrollContent: {
+    paddingBottom: 100,
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F4F1ED",
+  },
+  errorText: {
+    textAlign: "center",
+    marginTop: 50,
+    color: "#704F38",
+  },
+  profileCard: {
+    backgroundColor: "#fff",
+    marginHorizontal: 16,
+    marginTop: 24,
+    borderRadius: 20,
+    paddingVertical: 24,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
+    position: "relative",
+  },
+  editProfileButton: {
+    position: "absolute",
+    top: 16,
+    right: 16,
+    padding: 8,
+    backgroundColor: "#F4F1ED",
+    borderRadius: 20,
+  },
+  avatarContainer: {
+    borderWidth: 4,
+    borderColor: "#704F38",
+    borderRadius: 74,
+    padding: 4,
+  },
+  avatar: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+  },
+  fullName: {
+    marginTop: 16,
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#1F2029",
+  },
+  email: {
+    marginTop: 4,
+    fontSize: 16,
+    color: "#797979",
+  },
+  statsGridContainer: {
+    paddingHorizontal: 16,
+    marginTop: 24,
+    gap: 16,
+  },
+  statsRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    gap: 16,
+  },
+  statsCard: {
+    flex: 1,
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  menuContainer: {
+    marginTop: 24,
+    marginHorizontal: 16,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    overflow: "hidden",
+    paddingVertical: 8,
+    marginBottom: 24,
+  },
+  separator: {
+    height: 1,
+    backgroundColor: "#F4F1ED",
+    marginVertical: 8,
+    marginHorizontal: 20,
+  },
+});
