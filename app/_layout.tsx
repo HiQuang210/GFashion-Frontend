@@ -39,10 +39,9 @@ export default function RootLayout() {
               name="completeprofile"
               options={{ title: "completeprofile" }}
             />
-            <Stack.Screen name="location" options={{ title: "location" }} />
             <Stack.Screen
-              name="enterlocation"
-              options={{ title: "enterlocation" }}
+              name="location-picker"
+              options={{ title: "location-picker" }}
             />
 
             {/* Main App with Tabs */}
@@ -50,6 +49,7 @@ export default function RootLayout() {
 
             {/* Shopping Flow */}
             <Stack.Screen name="checkout" options={{ title: "Checkout" }} />
+            <Stack.Screen name="address-form" options={{ title: "AddAddress"}} />
 
             {/* Other Screens */}
             <Stack.Screen name="orders" options={{ title: "My Orders" }} />

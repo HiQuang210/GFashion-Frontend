@@ -5,7 +5,6 @@ import {
   Text,
   FlatList,
   ActivityIndicator,
-  Dimensions,
 } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect } from '@react-navigation/native';
@@ -13,7 +12,6 @@ import SearchBar from '@/components/SearchBar';
 import ProductItem from '@/components/ProductItem';
 import Pagination from '@/components/Pagination';
 import { useFavorites } from '@/hooks/useFavorite';
-import { useWishlistRealtime } from '@/hooks/useWishlist';
 import { useAuth } from '@/hooks/useAuth';
 import { getUserFavoriteProducts } from '@/api/services/UserService';
 import { Product } from '@/types/product';

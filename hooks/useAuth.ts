@@ -27,19 +27,23 @@ export function useAuth() {
     }
   };
 
-  const storeAuthData = async (response: LoginResponse) => {
+  const storeAuthData = async (response: LoginResponse): Promise<boolean> => {
     try {
+      // Clear any existing auth data first to prevent conflicts
+      await clearAuthData();
+      
       await AsyncStorage.multiSet([
         ["accessToken", response.access_token],
         ["refreshToken", response.refresh_token],
         ["userId", response.userInfo._id],
         ["userInfo", JSON.stringify(response.userInfo)],
       ]);
-
+      
       setUserInfo(response.userInfo);
+      return true;
     } catch (error) {
       console.error("Failed to store auth data:", error);
-      throw new Error("Failed to save authentication data");
+      return false;
     }
   };
 
@@ -76,16 +80,24 @@ export function useAuth() {
 
   const clearAuthData = useCallback(async () => {
     try {
-      await AsyncStorage.multiRemove([
-        "accessToken",
-        "refreshToken",
-        "userId",
-        "userInfo",
-      ]);
+      // Get all AsyncStorage keys and remove all auth-related ones
+      const allKeys = await AsyncStorage.getAllKeys();
+      const authKeys = allKeys.filter(key => 
+        ["accessToken", "refreshToken", "userId", "userInfo"].includes(key)
+      );
+      
+      if (authKeys.length > 0) {
+        await AsyncStorage.multiRemove(authKeys);
+      }
 
       setUserInfo(null);
 
+      // Clear all React Query cache
       queryClient.clear();
+      
+      // Also invalidate all queries to ensure fresh data on next login
+      await queryClient.invalidateQueries();
+      
     } catch (error) {
       console.error("Failed to clear auth data:", error);
       throw new Error("Failed to clear authentication data");

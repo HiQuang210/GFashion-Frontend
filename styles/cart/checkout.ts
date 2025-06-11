@@ -92,4 +92,7 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 0.5,
   },
+  checkoutButtonDisabled: {
+    backgroundColor: '#CCC',
+  },
 });

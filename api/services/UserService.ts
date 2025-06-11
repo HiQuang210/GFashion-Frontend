@@ -16,7 +16,6 @@ import {
   CartResponse,
 } from "@/types/user";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
 
 export interface HandleFavoriteData {
   action: "add" | "remove";
@@ -56,7 +55,7 @@ const handleApiCall = async <T>(
     const response = await apiCall();
     return response.data;
   } catch (error: any) {
-    console.error(`${operation} error:`, error.response?.data || error.message);
+    // console.error(`${operation} error:`, error.response?.data || error.message);
     throw error;
   }
 };

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -8,8 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
-import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { UserAPI } from '@/api/services/UserService';
 import { CartItemData } from '@/types/user';
@@ -25,14 +24,33 @@ import BackButton from '@/components/BackButton';
 
 export type ShippingType = 'standard' | 'express';
 
+interface SelectedAddressData {
+  recipient: string;
+  phone: string;
+  location: string;
+}
+
 export default function CheckoutPage() {
   const { userInfo } = useAuth();
   const router = useRouter();
   const { showErrorToast } = useToast();
+  const params = useLocalSearchParams();
   
-  const [selectedAddress, setSelectedAddress] = useState<string>('');
+  const [selectedAddress, setSelectedAddress] = useState<SelectedAddressData | null>(null);
   const [shippingType, setShippingType] = useState<ShippingType>('standard');
   const [orderNote, setOrderNote] = useState<string>('');
+
+  // Handle address selection from route params
+  useEffect(() => {
+    if (params.selectedAddress) {
+      try {
+        const addressData = JSON.parse(params.selectedAddress as string);
+        setSelectedAddress(addressData);
+      } catch (error) {
+        console.error('Error parsing selected address:', error);
+      }
+    }
+  }, [params.selectedAddress]);
 
   const { data: cartItems = [], isLoading, error } = useQuery<CartItemData[]>({
     queryKey: ['userCart', userInfo?._id],
@@ -70,12 +88,16 @@ export default function CheckoutPage() {
     }
   }, [error, showErrorToast]);
 
-
   const handleAddressSelect = () => {
-    router.push('/enterlocation');
+    router.push('/location-picker');
   };
 
   const handleCheckout = () => {
+    if (!selectedAddress) {
+      showErrorToast('Error', 'Please select a delivery address');
+      return;
+    }
+
     console.log('Checkout data:', {
       cartItems,
       selectedAddress,
@@ -83,6 +105,14 @@ export default function CheckoutPage() {
       orderNote,
       totalAmount: totalOrderAmount,
     });
+
+    // Here you would proceed with the actual checkout process
+    // For example, navigate to payment page or submit the order
+  };
+
+  const getAddressDisplayText = () => {
+    if (!selectedAddress) return '';
+    return `${selectedAddress.recipient} - ${selectedAddress.phone}\n${selectedAddress.location}`;
   };
 
   if (isLoading) {
@@ -136,7 +166,7 @@ export default function CheckoutPage() {
         {/* Address Picker */}
         <View style={styles.section}>
           <AddressPicker
-            selectedAddress={selectedAddress}
+            selectedAddress={getAddressDisplayText()}
             onAddressSelect={handleAddressSelect}
           />
         </View>
@@ -170,9 +200,13 @@ export default function CheckoutPage() {
         {/* Checkout Button */}
         <View style={styles.checkoutButtonContainer}>
           <TouchableOpacity
-            style={styles.checkoutButton}
+            style={[
+              styles.checkoutButton,
+              !selectedAddress && styles.checkoutButtonDisabled
+            ]}
             onPress={handleCheckout}
             activeOpacity={0.8}
+            disabled={!selectedAddress}
           >
             <Text style={styles.checkoutButtonText}>
               Place Order

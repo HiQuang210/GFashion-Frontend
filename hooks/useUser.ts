@@ -9,23 +9,40 @@ export function useUser(id: string | undefined) {
     error,
     refetch,
     isError,
+    isFetching,
   } = useQuery<UserDetailResponse>({
     queryKey: ["user", id],
-    queryFn: () => {
-      console.log("Calling getUserDetail with id:", id);
-      return getUserDetail(id!); 
+    queryFn: async () => {
+      if (!id) throw new Error("User ID is required");
+      console.log("Fetching user detail for ID:", id);
+      return getUserDetail(id);
     },
-    enabled: !!id, 
-    retry: 2, 
+    enabled: !!id,
+    retry: (failureCount, error) => {
+  
+      const status = (error as any)?.response?.status;
+      if (typeof status === "number" && status >= 400 && status < 500) {
+        return false;
+      }
+      return failureCount < 3;
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), 
     staleTime: 5 * 60 * 1000, 
     gcTime: 10 * 60 * 1000, 
+    refetchOnWindowFocus: false, 
+    refetchOnMount: true,
+    refetchOnReconnect: true,
+    meta: {
+      errorMessage: "Failed to load user data",
+    },
   });
 
   return { 
-    isLoading, 
+    isLoading: isLoading || isFetching, 
     user, 
     error,
     isError,
-    refetch 
+    refetch,
+    isFetching,
   };
 }

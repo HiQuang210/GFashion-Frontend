@@ -37,7 +37,7 @@ axiosClient.interceptors.response.use(
   async (error) => {
     const { config: originalRequest, response } = error;
     
-    console.error(`❌ ${response?.status || 'Network Error'} ${originalRequest?.url}`);
+    // console.error(`❌ ${response?.status || 'Network Error'} ${originalRequest?.url}`);
 
     if (response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
@@ -54,7 +54,7 @@ axiosClient.interceptors.response.use(
           return axiosClient(originalRequest);
         }
       } catch (refreshError) {
-        console.error("Token refresh failed:", refreshError);
+        //console.error("Token refresh failed:", refreshError);
         await AsyncStorage.multiRemove(Object.values(STORAGE_KEYS));
         router.replace("/login");
       }

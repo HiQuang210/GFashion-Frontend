@@ -16,25 +16,23 @@ export default function HomePage() {
   };
 
   return (
-    <ProtectedRoute>
-      <SafeAreaView style={styles.container}>
-        <ScrollView 
-          contentContainerStyle={{ flexGrow: 1, paddingBottom: 50 }} 
-          style={{ marginHorizontal: 20 }} 
-          showsVerticalScrollIndicator={false}
-        >
-          <HomeHeader />
-          <SearchBar
-            readOnly
-            onPress={handleSearchPress}
-          />
-          <Slider />
-          <Category />
-          <NewSection />
-          <BestSeller />
-        </ScrollView>
-      </SafeAreaView>
-    </ProtectedRoute>
+    <SafeAreaView style={styles.container}>
+      <ScrollView 
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 50 }} 
+        style={{ marginHorizontal: 20 }} 
+         showsVerticalScrollIndicator={false}
+      >
+         <HomeHeader />
+         <SearchBar
+          readOnly
+           onPress={handleSearchPress}
+        />
+        <Slider />
+         <Category />
+        <NewSection />
+        <BestSeller />
+      </ScrollView>
+     </SafeAreaView>
   );
 }
 

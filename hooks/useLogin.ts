@@ -7,18 +7,13 @@ import { useRouter } from "expo-router";
 export function useLogIn() {
   const router = useRouter();
   const { storeAuthData } = useAuth();
-  const { showSuccessToast, showErrorToast } = useToast();
+  const { showErrorToast } = useToast();
   
   const mutation = useMutation({
     mutationFn: logIn,
     onSuccess: async (response: LoginResponse) => {
       try {
         await storeAuthData(response);
-
-        showSuccessToast(
-          "Welcome back!",
-          `Hi ${response.userInfo.firstName}`
-        );
 
         router.replace("/tabs/homepage");
       } catch (error) {
