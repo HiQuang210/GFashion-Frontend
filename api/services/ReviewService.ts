@@ -16,7 +16,6 @@ const handleApiCall = async <T>(
     const response = await apiCall();
     return response.data;
   } catch (error: any) {
-    // console.error(`${operation} error:`, error.response?.data || error.message);
     throw error;
   }
 };
@@ -68,6 +67,13 @@ export class ReviewAPI {
 
     return handleApiCall("Get user reviews", () =>
       axiosClient.get(`review/user?${params}`)
+    );
+  }
+
+  // Get user reviews count
+  static async getUserReviewsCount(): Promise<{ data: { count: number } }> {
+    return handleApiCall("Get user reviews count", () =>
+      axiosClient.get("review/user/count")
     );
   }
 
@@ -177,6 +183,7 @@ export const {
   getReviewByOrderId,
   getProductReviews,
   getUserReviews,
+  getUserReviewsCount,
   updateReview,
   deleteReview,
   getAllReviews,

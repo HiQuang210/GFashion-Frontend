@@ -84,7 +84,7 @@ const OrderDetailPage = () => {
   };
 
   const handleReturnToShop = () => {
-    router.push('/tab/searchpage' as any);
+    router.push('/tabs/searchpage');
   };
 
   const formatDate = (dateString: string) => {

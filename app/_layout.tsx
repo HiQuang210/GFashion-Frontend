@@ -54,7 +54,7 @@ export default function RootLayout() {
 
             {/* Other Screens */}
             <Stack.Screen name="orders" options={{ title: "My Orders" }} />
-            <Stack.Screen name="my-reviews" options={{ title: "My Reviews" }} />
+            <Stack.Screen name="reviews" options={{ title: "My Reviews" }} />
             <Stack.Screen name="settings" options={{ title: "settings" }} />
             <Stack.Screen name="my-profile" options={{ title: "my-profile" }} />
             <Stack.Screen name="edit-profile" options={{ title: "edit-profile" }} />

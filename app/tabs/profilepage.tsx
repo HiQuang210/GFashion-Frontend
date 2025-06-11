@@ -47,7 +47,6 @@ export default function ProfilePage() {
   const { user, isLoading: isUserLoading, refetch } = useUser(userId);
   const uploadMutation = useUpdateUser();
 
-  // Fetch orders count from OrderService
   const {
     data: ordersResponse,
     isLoading: isOrdersLoading,
@@ -128,7 +127,7 @@ export default function ProfilePage() {
 
   const navigateToOrders = () => router.push("/orders");
   const navigateToChangeInfo = () => router.push("/edit-profile");
-  const navigateToMyReviews = () => router.push("/my-reviews");
+  const navigateToMyReviews = () => router.push("/reviews");
 
   return (
     <SafeAreaView style={styles.container}>
