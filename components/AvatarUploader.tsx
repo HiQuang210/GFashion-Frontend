@@ -1,12 +1,12 @@
 import { useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import {
-  Alert,
   Image,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  Platform,
 } from "react-native";
 import Feather from "@expo/vector-icons/Feather";
 import layout from "@/styles/layout";
@@ -14,81 +14,107 @@ import { useUpdateUser } from "@/hooks/useUpdateUser";
 import { router } from "expo-router";
 import link from "@/styles/link";
 import text from "@/styles/text";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useToast } from "@/hooks/useToast";
+
+interface AvatarUploaderProps {
+  userId: string;
+  userAvatar?: string | null;
+  userData: any;
+  onAvatarUpdate?: () => void; 
+  showSignInButton?: boolean; 
+}
 
 export default function AvatarUploader({
   userId,
   userAvatar,
   userData,
-}: {
-  userId: string;
-  userAvatar: string;
-  userData: any;
-}) {
+  onAvatarUpdate,
+  showSignInButton = false,
+}: AvatarUploaderProps) {
   const [image, setImage] = useState<string | null>(null);
   const uploadMutation = useUpdateUser();
+  const { showSuccessToast, showErrorToast } = useToast();
 
-  const goToProfile = async () => {
-    await AsyncStorage.setItem("userId", userId);
+  const goToProfile = () => {
     router.push("/tabs/homepage");
   };
 
   const pickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      alert("Permisson denied");
-      return;
-    }
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        showErrorToast("Permission Required", "Sorry, we need camera roll permissions to make this work!");
+        return;
+      }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: false,
-      aspect: [1, 1],
-      quality: 1,
-    });
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
 
-    if (!result.canceled) {
-      const picked = result.assets[0];
-      setImage(picked.uri);
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const picked = result.assets[0];
+        setImage(picked.uri);
 
-      // Tạo FormData
-      const formData = new FormData();
+        const formData = new FormData();
 
-      // Nếu bạn muốn cập nhật thêm các trường text, ví dụ firstName, lastName, thì append ở đây:
-      // formData.append("firstName", "Nguyen");
-      // formData.append("lastName", "Van A");
-
-      // Chỉ append avatar dưới key "avatar" (phải khớp với upload.single("avatar") bên server)
-      formData.append("avatar", {
-        uri: picked.uri,
-        name: picked.fileName || `avatar_${Date.now()}.jpg`,
-        type:
-          picked.type === "image" ? "image/jpeg" : picked.type || "image/jpeg",
-      } as any);
-
-      // Gọi mutation – truyền trực tiếp formData dưới dạng 'file',
-      // và để data={} (hoặc chứa các field text nếu cần)
-      uploadMutation.mutate(
-        {
-          id: userId,
-          data: {}, // không đặt avatar ở đây nữa
-          file: formData, // chúng ta sẽ gửi formData làm 'file'
-        } as any,
-        {
-          onSuccess: () => {
-            Alert.alert("Thành công", "Ảnh đại diện đã được cập nhật.");
-          },
-          onError: (error: any) => {
-            Alert.alert("Lỗi cập nhật", error.message || "Có lỗi xảy ra");
-          },
+        if (Platform.OS === 'web') {
+          try {
+            const response = await fetch(picked.uri);
+            const blob = await response.blob();
+            
+            formData.append("avatar", blob, picked.fileName || `avatar_${Date.now()}.jpg`);
+          } catch (error) {
+            console.error("Error processing image for web:", error);
+            showErrorToast("Error", "Failed to process image. Please try again.");
+            return;
+          }
+        } else {
+          const fileObject = {
+            uri: picked.uri,
+            name: picked.fileName || `avatar_${Date.now()}.jpg`,
+            type: picked.mimeType || "image/jpeg",
+          };
+          
+          formData.append("avatar", fileObject as any);
         }
-      );
+
+        uploadMutation.mutate(
+          {
+            id: userId,
+            data: {},
+            file: formData,
+          },
+          {
+            onSuccess: (response) => {
+              console.log("Avatar upload success:", response);
+              showSuccessToast("Success", "Avatar has been updated successfully!");
+              if (onAvatarUpdate) {
+                onAvatarUpdate();
+              }
+            },
+            onError: (error: any) => {
+              console.error("Avatar upload error:", error);
+              const errorMessage = error?.response?.data?.message || 
+                                 error?.message || 
+                                 "An error occurred while updating your avatar. Please try again.";
+              showErrorToast("Upload Error", errorMessage);
+              setImage(null);
+            },
+          }
+        );
+      }
+    } catch (error) {
+      console.error("Image picker error:", error);
+      showErrorToast("Error", "Failed to open image picker. Please try again.");
     }
   };
 
   return (
-    <>
-      <View style={{ position: "relative" }}>
+    <View style={styles.container}>
+      <View style={styles.avatarContainer}>
         <Image
           source={
             image
@@ -103,40 +129,64 @@ export default function AvatarUploader({
         <TouchableOpacity
           onPress={pickImage}
           style={[styles.edit, layout.flex_col_center]}
+          disabled={uploadMutation.isPending}
         >
-          <Feather name="edit-3" size={25} color={"#fff"} />
+          <Feather 
+            name="edit-3" 
+            size={25} 
+            color={uploadMutation.isPending ? "#ccc" : "#fff"} 
+          />
         </TouchableOpacity>
       </View>
-      <TouchableOpacity
-        style={[
-          link.btn_link,
-          link.btn_link_base,
-          { marginTop: 20, marginBottom: 20 },
-        ]}
-        onPress={goToProfile}
-      >
-        <Text style={text.text_btn}>Sign In</Text>
-      </TouchableOpacity>
-    </>
+
+      {showSignInButton && (
+        <TouchableOpacity
+          style={[
+            link.btn_link,
+            link.btn_link_base,
+            { marginTop: 20, marginBottom: 20 },
+          ]}
+          onPress={goToProfile}
+        >
+          <Text style={text.text_btn}>Continue</Text>
+        </TouchableOpacity>
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+  },
+  avatarContainer: {
+    position: "relative",
+    marginBottom: 10,
+  },
   img: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    marginHorizontal: "auto",
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    borderWidth: 3,
+    borderColor: '#f0f0f0',
   },
   edit: {
-    width: 50,
-    height: 50,
+    width: 40,
+    height: 40,
     borderWidth: 3,
     borderColor: "#fff",
     backgroundColor: "#704F38",
-    borderRadius: 30,
+    borderRadius: 20,
     position: "absolute",
     bottom: 0,
-    right: 70,
+    right: 0,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
 });

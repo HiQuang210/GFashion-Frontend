@@ -70,16 +70,17 @@ export default function AddAddress() {
     }
   }, [isEditMode, editAddressData, isInitialDataLoaded]);
 
-  // Update location string when selections change
   useEffect(() => {
-    if (selectedProvince && selectedDistrict && selectedWard && isInitialDataLoaded) {
+    const shouldUpdateLocation = isEditMode ? isInitialDataLoaded : true;
+    
+    if (selectedProvince && selectedDistrict && selectedWard && shouldUpdateLocation) {
       const locationParts = [selectedWard.name, selectedDistrict.name, selectedProvince.name];
       if (houseNumber.trim()) {
         locationParts.unshift(houseNumber.trim());
       }
       setLocation(locationParts.join(', '));
     }
-  }, [selectedProvince, selectedDistrict, selectedWard, houseNumber, isInitialDataLoaded]);
+  }, [selectedProvince, selectedDistrict, selectedWard, houseNumber, isInitialDataLoaded, isEditMode]);
 
   const parseLocationForEdit = async (locationString: string) => {
     const parts = locationString.split(', ');
@@ -97,7 +98,6 @@ export default function AddAddress() {
       
       setLocation(locationString);
       
-      // Delay to allow provinces to load
       setTimeout(() => matchLocationComponents(provinceName, districtName, wardName), 1000);
     }
   };
@@ -197,7 +197,8 @@ export default function AddAddress() {
       { condition: !phone.trim(), message: 'Please enter phone number' },
       { condition: phone.length < 10, message: 'Please enter a valid phone number' },
       { condition: !selectedProvince || !selectedDistrict || !selectedWard, 
-        message: 'Please select complete location (Province, District, Ward)' }
+        message: 'Please select complete location (Province, District, Ward)' },
+      { condition: !location.trim(), message: 'Location is required' } // Added this validation
     ];
 
     for (const { condition, message } of validations) {

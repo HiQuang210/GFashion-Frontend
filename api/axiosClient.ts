@@ -10,8 +10,7 @@ const STORAGE_KEYS = {
 } as const;
 
 const axiosClient: AxiosInstance = axios.create({
-  // baseURL: "http://192.168.1.4:5000/api",
-  baseURL: "https://29f2xn0p-5000.asse.devtunnels.ms/api",
+  baseURL: "http://192.168.1.4:5000/api",
   timeout: 20000,
   headers: { "Content-Type": "application/json" }
 });

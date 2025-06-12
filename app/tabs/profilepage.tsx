@@ -2,19 +2,13 @@ import React, { useEffect, useState } from "react";
 import {
   SafeAreaView,
   View,
-  Image,
-  TouchableOpacity,
   Text,
-  Alert,
   ScrollView,
   ActivityIndicator,
   RefreshControl,
 } from "react-native";
-import * as ImagePicker from "expo-image-picker";
-import Feather from "@expo/vector-icons/Feather";
 import { useQuery } from '@tanstack/react-query';
 import { useUser } from "@/hooks/useUser";
-import { useUpdateUser } from "@/hooks/useUpdateUser";
 import { useTabNavigation } from "@/contexts/TabNavigation";
 import SectionProfile from "@/components/SectionProfile";
 import LogoutSection from "@/components/SectionLogout";
@@ -24,6 +18,7 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { useFavorites } from "@/hooks/useFavorite";
 import { OrderAPI } from "@/api/services/OrderService";
 import { styles } from "@/styles/profile";
+import AvatarUploader from "@/components/AvatarUploader";
 
 const formatCurrency = (value: number = 0) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
@@ -45,7 +40,6 @@ export default function ProfilePage() {
   const userId = userInfo?._id;
   const { favorites, isLoading: isFavoritesLoading } = useFavorites();
   const { user, isLoading: isUserLoading, refetch } = useUser(userId);
-  const uploadMutation = useUpdateUser();
 
   const {
     data: ordersResponse,
@@ -58,6 +52,13 @@ export default function ProfilePage() {
     staleTime: 5 * 60 * 1000,
   });
 
+  useEffect(() => {
+    if (userId) {
+      refetch();
+      refetchOrders();
+    }
+  }, [userId, refetch, refetchOrders]);
+
   const ordersCount = ordersResponse?.data?.length || 0;
 
   const onRefresh = React.useCallback(async () => {
@@ -66,42 +67,7 @@ export default function ProfilePage() {
     setRefreshing(false);
   }, [refetch, refreshUserData, refetchOrders]);
 
-  const pickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      alert("Permission denied");
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      const picked = result.assets[0];
-      const formData = new FormData();
-      formData.append("avatar", {
-        uri: picked.uri,
-        name: picked.fileName || `avatar_${Date.now()}.jpg`,
-        type: picked.mimeType || "image/jpeg",
-      } as any);
-
-      uploadMutation.mutate({ id: userId, data: {}, file: formData } as any, {
-        onSuccess: async () => {
-          await refetch();
-          Alert.alert("Success", "Avatar has been updated.");
-        },
-        onError: (error: any) => {
-          Alert.alert("Update Error", error.message || "An error occurred");
-        },
-      });
-    }
-  };
-
-  if ((isAuthLoading || isUserLoading) && !refreshing) {
+  if (isAuthLoading && !refreshing) {
     return (
       <View style={styles.loaderContainer}>
         <ActivityIndicator size="large" color="#704F38" />
@@ -109,9 +75,7 @@ export default function ProfilePage() {
     );
   }
 
-  const userData = user?.data || userInfo;
-
-  if (!userData) {
+  if (!userInfo) {
     return (
       <SafeAreaView style={styles.container}>
         <Text style={styles.errorText}>
@@ -121,9 +85,17 @@ export default function ProfilePage() {
     );
   }
 
-  const avatarSource = userData.img
-    ? { uri: userData.img }
-    : require("@/assets/images/default-avatar.png");
+  if (!userId) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.errorText}>
+          User ID not found. Please log in again.
+        </Text>
+      </SafeAreaView>
+    );
+  }
+
+  const userData = (user?.data && user.data._id === userInfo._id) ? user.data : userInfo;
 
   const navigateToOrders = () => router.push("/orders");
   const navigateToChangeInfo = () => router.push("/edit-profile");
@@ -143,15 +115,13 @@ export default function ProfilePage() {
         contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.profileCard}>
-          <TouchableOpacity
-            onPress={navigateToChangeInfo}
-            style={styles.editProfileButton}
-          >
-            <Feather name="edit" size={20} color="#333" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={pickImage} style={styles.avatarContainer}>
-            <Image source={avatarSource} style={styles.avatar} />
-          </TouchableOpacity>
+          {/* Fixed: Pass userId safely after null check */}
+          <AvatarUploader
+            userId={userId}
+            userAvatar={userData.img}
+            userData={userData}
+            onAvatarUpdate={refetch}
+          />
           <Text style={styles.fullName}>
             {userData.lastName} {userData.firstName}
           </Text>

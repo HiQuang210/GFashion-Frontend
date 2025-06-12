@@ -13,9 +13,15 @@ export function useLogIn() {
     mutationFn: logIn,
     onSuccess: async (response: LoginResponse) => {
       try {
-        await storeAuthData(response);
-
-        router.replace("/tabs/homepage");
+        const success = await storeAuthData(response);
+        
+        if (success) {
+          setTimeout(() => {
+            router.replace("/tabs/homepage");
+          }, 100);
+        } else {
+          showErrorToast("Login Error", "Failed to save login data");
+        }
       } catch (error) {
         console.error("Error storing auth data:", error);
         showErrorToast("Login Error", "Failed to save login data");

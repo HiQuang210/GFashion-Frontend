@@ -15,17 +15,22 @@ export function useLogout() {
       try {
         await clearAuthData();
         showSuccessToast("Logout", "Successfully logged out");
-        router.replace("/login");
+        
+        setTimeout(() => {
+          router.replace("/login");
+        }, 100);
       } catch (error) {
-        console.error("Error clearing auth data:", error);
         router.replace("/login");
       }
     },
-    onError: async (error: any) => {
+    onError: async () => {
       try {
         await clearAuthData();
         showSuccessToast("Logout", "Successfully logged out");
-        router.replace("/login");
+        
+        setTimeout(() => {
+          router.replace("/login");
+        }, 100);
       } catch (clearError) {
         console.error("Error clearing auth data after API failure:", clearError);
         router.replace("/login");

@@ -39,6 +39,9 @@ export function useAuth() {
       ]);
       
       setUserInfo(response.userInfo);
+      
+      await queryClient.invalidateQueries();
+      
       return true;
     } catch (error) {
       console.error("Failed to store auth data:", error);
@@ -71,6 +74,8 @@ export function useAuth() {
     try {
       await AsyncStorage.setItem("userInfo", JSON.stringify(updatedUser));
       setUserInfo(updatedUser);
+      
+      await queryClient.invalidateQueries({ queryKey: ["user", updatedUser._id] });
     } catch (error) {
       console.error("Failed to update user info:", error);
       throw new Error("Failed to update user information");
@@ -79,6 +84,8 @@ export function useAuth() {
 
   const clearAuthData = useCallback(async () => {
     try {
+      setUserInfo(null);
+      
       const allKeys = await AsyncStorage.getAllKeys();
       const authKeys = allKeys.filter(key => 
         ["accessToken", "refreshToken", "userId", "userInfo"].includes(key)
@@ -88,7 +95,6 @@ export function useAuth() {
         await AsyncStorage.multiRemove(authKeys);
       }
 
-      setUserInfo(null);
       queryClient.clear();
       await queryClient.invalidateQueries();
       

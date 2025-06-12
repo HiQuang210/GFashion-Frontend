@@ -6,7 +6,6 @@ import SearchBar from "@/components/SearchBar";
 import Slider from "@/components/Slider";
 import { SafeAreaView, StyleSheet, ScrollView } from "react-native";
 import { useTabNavigation } from "@/contexts/TabNavigation";
-import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function HomePage() {
   const { navigateToTab } = useTabNavigation();
