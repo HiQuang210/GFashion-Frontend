@@ -1,50 +1,233 @@
-# Welcome to your Expo app 👋
+# GFashion-Frontend
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A modern fashion e-commerce mobile application built with React Native and Expo. GFashion provides customers with an intuitive and seamless shopping experience for discovering, browsing, and purchasing the latest fashion trends right from their mobile devices.
 
-## Get started
+## 📱 App Features
 
-1. Install dependencies
+**Product Discovery**
+- Browse extensive fashion collections
+- Advanced search and filtering options
+- Category-based navigation (Men, Women, Accessories)
+- Trending and featured product sections
 
+**Shopping Experience**
+- Detailed product views with high-quality images
+- Size guides and product specifications
+- Wishlist and favorites functionality
+- Shopping cart with easy checkout process
+
+**User Account**
+- Secure user registration and authentication
+- Personal profile management
+- Order history and tracking
+- Address book for shipping
+
+**Reviews & Ratings**
+- Customer product reviews and ratings
+- Photo reviews and feedback
+- Review filtering and sorting
+
+**Personalization**
+- Personalized product recommendations
+- Custom style preferences
+
+**Payment & Checkout**
+- Secure payment processing
+- Order confirmation and receipts
+- Real-time order tracking
+
+## 🚀 Tech Stack
+
+- **React Native** - Cross-platform mobile development
+- **Expo** - Development platform and toolchain
+- **TypeScript** - Type-safe development
+- **Expo Router** - File-based routing system
+- **Native Base / Styled Components** - UI components and styling
+
+## 📋 Prerequisites
+
+Before running this project, make sure you have:
+
+- Node.js (version 16.0 or higher)
+- npm or yarn package manager
+- Expo CLI installed globally
+- iOS Simulator (for Mac users) or Android Studio (for Android development)
+- Physical device with Expo Go app (optional)
+
+## 🛠️ Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/gfashion-frontend.git
+   cd gfashion-frontend
+   ```
+
+2. **Install dependencies**
    ```bash
    npm install
+   # or
+   yarn install
    ```
 
-2. Start the app
-
+3. **Environment Configuration**
    ```bash
-    npx expo start
+   cp .env.example .env
+   ```
+   Configure your environment variables in `.env`:
    ```
 
-In the output, you'll find options to open the app in a
+## 🏃‍♂️ Running the Project
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### Start the Development Server
+```bash
+npx expo start
+```
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### Running Options
 
-## Get a fresh project
+After starting the development server, you'll see options to open the app in:
 
-When you're ready, run:
+**Development Build**
+- For testing native features and custom native code
+
+**Android Emulator**
+- Requires Android Studio and Android SDK setup
+- Press `a` in the terminal to open Android emulator
+
+**iOS Simulator** (Mac only)
+- Requires Xcode installation
+- Press `i` in the terminal to open iOS simulator
+
+**Expo Go** (Recommended for quick testing)
+- Install Expo Go app on your physical device
+- Scan the QR code from the terminal
+- Limited sandbox environment for basic development
+
+### Development Commands
+
+```bash
+# Start development server
+npx expo start
+
+# Start with cleared cache
+npx expo start --clear
+
+# Start in tunnel mode (for testing on physical device)
+npx expo start --tunnel
+
+# Run on specific platform
+npx expo run:android
+npx expo run:ios
+```
+
+## 🎨 File-based Routing
+
+This project uses Expo Router with file-based routing. You can start developing by editing files inside the `app` directory:
+
+- `app/_layout.tsx` - Root layout component
+- `app/(tabs)/` - Tab navigation screens
+- `app/product/[id].tsx` - Dynamic product detail page
+- `app/auth/login.tsx` - Login screen
+
+## 🔄 Getting a Fresh Project
+
+When you're ready to start with a clean slate:
 
 ```bash
 npm run reset-project
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+This command will:
+- Move the starter code to the `app-example` directory
+- Create a blank `app` directory for your custom development
+- Preserve the project configuration
 
-## Learn more
+## 📦 Building for Production
 
-To learn more about developing your project with Expo, look at the following resources:
+### Create Production Build
+```bash
+# Build for Android
+npx expo build:android
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+# Build for iOS
+npx expo build:ios
 
-## Join the community
+# Using EAS Build (recommended)
+npx eas build --platform android
+npx eas build --platform ios
+```
 
-Join our community of developers creating universal apps.
+### App Store Deployment
+```bash
+# Submit to Google Play Store
+npx eas submit --platform android
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+# Submit to Apple App Store
+npx eas submit --platform ios
+```
+
+## 🔧 Configuration
+
+### Expo Configuration (app.json)
+```json
+{
+  "expo": {
+    "name": "GFashion",
+    "slug": "gfashion-app",
+    "version": "1.0.0",
+    "platforms": ["ios", "android"],
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png"
+    }
+  }
+}
+```
+
+## 🧪 Testing
+
+```bash
+# Run tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run E2E tests
+npm run test:e2e
+```
+
+## 🔍 Debugging
+
+- Use **Flipper** for advanced debugging
+- **React Native Debugger** for Redux state inspection
+- **Expo DevTools** for performance monitoring
+- **Console logs** visible in terminal and browser
+
+## 📱 Device Testing
+
+**Physical Device Testing:**
+1. Install Expo Go app from App Store/Google Play
+2. Create Expo account
+3. Scan QR code from development server
+4. Test app functionality on real device
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Follow the coding standards and add tests
+4. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+5. Push to the branch (`git push origin feature/AmazingFeature`)
+6. Open a Pull Request
+
+## 📚 Resources
+
+- [Expo Documentation](https://docs.expo.dev/)
+- [React Native Documentation](https://reactnative.dev/)
+- [Expo Router Documentation](https://expo.github.io/router/)
+- [React Native Testing Library](https://callstack.github.io/react-native-testing-library/)
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
