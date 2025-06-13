@@ -58,13 +58,13 @@ Before running this project, make sure you have:
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/gfashion-frontend.git
-   cd gfashion-frontend
+   git clone https://github.com/HiQuang210/GFashion-Frontend.git
+   cd GFashion-Frontend
    ```
 
 2. **Install dependencies**
    ```bash
-   npm install
+   npx expo install 
    # or
    yarn install
    ```
@@ -173,7 +173,7 @@ npx eas submit --platform ios
 {
   "expo": {
     "name": "GFashion",
-    "slug": "gfashion-app",
+    "slug": "GFashion-app",
     "version": "1.0.0",
     "platforms": ["ios", "android"],
     "icon": "./assets/icon.png",
